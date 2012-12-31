@@ -1,7 +1,8 @@
 package com.iabdullah.hijri.test;
 
-import java.islamic.hijri.HijriCalendar;
 import java.util.Calendar;
+
+import org.abdullah.islamic.hijri.HijriCalendar;
 
 
 public class Hijri {

@@ -1,4 +1,4 @@
-package java.islamic.hijri;
+package org.abdullah.islamic.hijri;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;

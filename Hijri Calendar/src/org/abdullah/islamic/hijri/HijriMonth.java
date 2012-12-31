@@ -1,4 +1,4 @@
-package java.islamic.hijri;
+package org.abdullah.islamic.hijri;
 
 public enum HijriMonth {
 
