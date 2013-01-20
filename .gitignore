@@ -8,5 +8,7 @@
 Icon?
 ehthumbs.db
 Thumbs.db
-#directory
-*/bin/
+# generated files
+bin/
+gen/
+build/
