@@ -1,14 +1,14 @@
 package com.iabdullah.android.util;
 
-import org.abdullah.islamic.hijri.HijriCalendar;
+import org.abdullah.islamic.hijri.HijraCalendar;
 
-public class HijriMonthDisplayHelper {
+public class HijraMonthDisplayHelper {
 
     // display pref
     private final int mWeekStartDay;
 
     // holds current month, year, helps compute display
-    private HijriCalendar mCalendar;
+    private HijraCalendar mCalendar;
 
     // cached computed stuff that helps with display
     private int mNumDaysInMonth;
@@ -21,37 +21,37 @@ public class HijriMonthDisplayHelper {
      * @param month The month.
      * @param weekStartDay What day of the week the week should start.
      */
-    public HijriMonthDisplayHelper(int year, int month, int weekStartDay) {
+    public HijraMonthDisplayHelper(int year, int month, int weekStartDay) {
 
-        if (weekStartDay < HijriCalendar.SUNDAY || weekStartDay > HijriCalendar.SATURDAY) {
+        if (weekStartDay < HijraCalendar.SUNDAY || weekStartDay > HijraCalendar.SATURDAY) {
             throw new IllegalArgumentException();
         }
         mWeekStartDay = weekStartDay;
 
-        mCalendar = HijriCalendar.getInstance();
-        mCalendar.set(HijriCalendar.YEAR, year);
-        mCalendar.set(HijriCalendar.MONTH, month);
-        mCalendar.set(HijriCalendar.DAY_OF_MONTH, 1);
-        mCalendar.set(HijriCalendar.HOUR_OF_DAY, 0);
-        mCalendar.set(HijriCalendar.MINUTE, 0);
-        mCalendar.set(HijriCalendar.SECOND, 0);
+        mCalendar = HijraCalendar.getInstance();
+        mCalendar.set(HijraCalendar.YEAR, year);
+        mCalendar.set(HijraCalendar.MONTH, month);
+        mCalendar.set(HijraCalendar.DAY_OF_MONTH, 1);
+        mCalendar.set(HijraCalendar.HOUR_OF_DAY, 0);
+        mCalendar.set(HijraCalendar.MINUTE, 0);
+        mCalendar.set(HijraCalendar.SECOND, 0);
         mCalendar.getTimeInMillis();
 
         recalculate();
     }
 
 
-    public HijriMonthDisplayHelper(int year, int month) {
-        this(year, month, HijriCalendar.SUNDAY);
+    public HijraMonthDisplayHelper(int year, int month) {
+        this(year, month, HijraCalendar.SUNDAY);
     }
 
 
     public int getYear() {
-        return mCalendar.get(HijriCalendar.YEAR);
+        return mCalendar.get(HijraCalendar.YEAR);
     }
 
     public int getMonth() {
-        return mCalendar.get(HijriCalendar.MONTH);
+        return mCalendar.get(HijraCalendar.MONTH);
     }
 
 
@@ -64,7 +64,7 @@ public class HijriMonthDisplayHelper {
      *   {@link java.util.Calendar#SUNDAY}.
      */
     public int getFirstDayOfMonth() {
-        return mCalendar.get(HijriCalendar.DAY_OF_WEEK);
+        return mCalendar.get(HijraCalendar.DAY_OF_WEEK);
     }
 
     /**
@@ -139,7 +139,7 @@ public class HijriMonthDisplayHelper {
      * Decrement the month.
      */
     public void previousMonth() {
-        mCalendar.add(HijriCalendar.MONTH, -1);
+        mCalendar.add(HijraCalendar.MONTH, -1);
         recalculate();
     }
 
@@ -147,7 +147,7 @@ public class HijriMonthDisplayHelper {
      * Increment the month.
      */
     public void nextMonth() {
-        mCalendar.add(HijriCalendar.MONTH, 1);
+        mCalendar.add(HijraCalendar.MONTH, 1);
         recalculate();
     }
 
@@ -164,7 +164,7 @@ public class HijriMonthDisplayHelper {
             return false;
         }
 
-        int day = 7 * row + column - mOffset + 1;
+        int day = 7 * row + column - mOffset;
         if (day > mNumDaysInMonth) {
             return false;
         }
@@ -175,12 +175,12 @@ public class HijriMonthDisplayHelper {
     // helper method that recalculates cached values based on current month / year
     private void recalculate() {
 
-        mNumDaysInMonth = mCalendar.getActualMaximum(HijriCalendar.DAY_OF_MONTH);
+        mNumDaysInMonth = mCalendar.getActualMaximum(HijraCalendar.DAY_OF_MONTH);
         System.out.println("mNumDaysInMonth=" + mNumDaysInMonth);
 
-        mCalendar.add(HijriCalendar.MONTH, -1);
-        mNumDaysInPrevMonth = mCalendar.getActualMaximum(HijriCalendar.DAY_OF_MONTH);
-        mCalendar.add(HijriCalendar.MONTH, 1);
+        mCalendar.add(HijraCalendar.MONTH, -1);
+        mNumDaysInPrevMonth = mCalendar.getActualMaximum(HijraCalendar.DAY_OF_MONTH);
+        mCalendar.add(HijraCalendar.MONTH, 1);
 
         int firstDayOfMonth = getFirstDayOfMonth();
         int offset = firstDayOfMonth - mWeekStartDay;
