@@ -2,25 +2,107 @@ package org.abdullah.islamic.hijri;
 
 import java.util.Calendar;
 /**
- * 
+ * The <code>HijraCalendar</code> class is implementation of Muayyad Saleh Alsadi Hijra <a href="http://git.ojuba.org/cgit/hijra">method</a>
  * @author abdullah alfadhel
- * @version 0.0.1
+ * @version 0.0.2
  *
  */
-@SuppressWarnings("serial")
 public class HijraCalendar extends Calendar {
+	// Proclaim serialization
+	private static final long serialVersionUID = -602763277873317926L;
 	protected static final int CONTS_P = 191;
 	protected static final int CONTS_Q = 360;
 	protected static final int CONTS_A = 48;
 	//Julian 0622-7-16 = gregorian 0759-6-11 (I think it should be 622, 7, 19)
 	protected static final int HIJRI_EPOCH = 227015;
 	
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * first month of the year in the Hijri calendar.
+     */
+    public final static int MUHARRAM = 1;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * second month of the year in the Hijri calendar.
+     */
+    public final static int SAFAR = 2;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * third month of the year in the Hijri calendars.
+     */
+    public final static int RABI_I = 3;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * fourth month of the year in the Hijri calendar.
+     */
+    public final static int RABI_II = 4;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * fifth month of the year in the Hijri calendar.
+     */
+    public final static int JUMADA_I = 5;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * sixth month of the year in the Hijri calendar.
+     */
+    public final static int JUMADA_II = 6;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * seventh month of the year in the Hijri calendar.
+     */
+    public final static int RAJAB = 7;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * eighth month of the year in the Hijri calendar.
+     */
+    public final static int SHAABAN = 8;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * ninth month of the year in the Hijri calendar.
+     */
+    public final static int RAMADAN = 9;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * tenth month of the year in the Hijri calendar.
+     */
+    public final static int SHAWWAL = 10;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * eleventh month of the year in the Hijri calendar.
+     */
+    public final static int DHU_AL_QIDAH = 11;
+
+    /**
+     * Value of the {@link #MONTH} field indicating the
+     * twelfth month of the year in the Hijri calendar.
+     */
+    public final static int DHU_AL_HIJJAH = 12;
+	
+    /**
+     * Gets a hijri calendar using the default time zone and locale. The
+     * <code>HijraCalendar</code> returned is based on the current time
+     * in the default time zone with the default locale.
+     *
+     * @return a HijraCalendar.
+     */
 	public static HijraCalendar getInstance(){
 		return new HijraCalendar(Calendar.getInstance());
 	}
+	
 	public HijraCalendar(Calendar calendar){
 		gregorianToHijri(calendar);
 	}
+	
 	public Calendar toGregorianCalendar(){
 		return hijriToGregorian(get(YEAR), get(MONTH), get(DAY_OF_MONTH));
 	}
@@ -38,6 +120,7 @@ public class HijraCalendar extends Calendar {
 		else
 			return 29;
 	}
+	
 	/**
 	 * 
 	 * @param year Hijri year
@@ -57,6 +140,7 @@ public class HijraCalendar extends Calendar {
 		}
 		return sum;
 	}
+	
 	/**
 	 * 
 	 * @param year Hijri year
@@ -65,6 +149,7 @@ public class HijraCalendar extends Calendar {
 	protected int getHijriYearDays(int year){
 		return getHijriDaysBeforeMonth(year,13);
 	}
+	
 	/**
 	 * 
 	 * @param year Hijri year
@@ -75,6 +160,7 @@ public class HijraCalendar extends Calendar {
 	public int getHijriDayNumber(int year, int month, int day){
 		return getHijriDaysBeforeMonth(year, month) + day;
 	}
+	
 	/**
 	 * 
 	 * @param year Hijri year
@@ -96,8 +182,8 @@ public class HijraCalendar extends Calendar {
 		// plus days from the begining of that year
 		dc += getHijriDayNumber (year, month, day) - 1;
 		return dc;
-		
 	}
+	
 	/**
 	 * Hijri date (Y,M,D) corresponding to the given absolute number of days.
 	 * @param date absolute number of days
@@ -114,7 +200,7 @@ public class HijraCalendar extends Calendar {
 				mMONTH-=1;
 			if (mMONTH==0){
 				mYEAR-=1;
-				mMONTH=12;
+				mMONTH=DHU_AL_HIJJAH;
 			}
 			int monthDays = getHijriMonthDays(mYEAR,mMONTH);
 			d-=monthDays; // this call is fast
@@ -126,6 +212,7 @@ public class HijraCalendar extends Calendar {
 		set(DAY_OF_MONTH, mDAY);
 		set(DAY_OF_WEEK, getHijriDayOfWeek(mYEAR, mMONTH, mDAY));
 	}
+	
 	/**
 	 * 
 	 * @param year
@@ -136,8 +223,10 @@ public class HijraCalendar extends Calendar {
 			return 1;
 		return 0;
 	}
-	//
+	
+	//Length of months (in days) in Gregorian calendar 
 	int [] days_in_month = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	
 	/**
 	 * 
 	 * @param year
@@ -149,6 +238,7 @@ public class HijraCalendar extends Calendar {
 			return 29;
 		return days_in_month[month-1];
 	}
+	
 	/**
 	 * 
 	 * @param year
@@ -205,6 +295,7 @@ public class HijraCalendar extends Calendar {
 		}
 		return calendar;
 	}
+	
 	/**
 	 * 
 	 * @param year
@@ -214,6 +305,7 @@ public class HijraCalendar extends Calendar {
 	protected int getHijriMonthDays_(int year, int month){
 		return hijriToAbsolute(year+month/12,month%12+1,1)-hijriToAbsolute(year,month,1);
 	}
+	
 	/**
 	 * 
 	 * @param year
@@ -224,6 +316,7 @@ public class HijraCalendar extends Calendar {
 	protected int getHijriDayOfWeek(int year, int month, int day){
 		return hijriToAbsolute(year, month, day) % 7;
 	}
+	
 	/**
 	 * 
 	 * @param year
@@ -234,6 +327,7 @@ public class HijraCalendar extends Calendar {
 	protected int getGregorianDayOfWeek(int year, int month, int day){
 		return gregorianToAbsolute (year,month, day) % 7;
 	}
+	
 	/**
 	 * 
 	 * @param year
@@ -244,6 +338,7 @@ public class HijraCalendar extends Calendar {
 	public Calendar hijriToGregorian(int year, int month, int day){
 		return absoluteToGregorian( hijriToAbsolute (year, month, day));
 	}
+	
 	/**
 	 * Hijri  (year, month, day) converted from gregorian calender
 	 * @param year
@@ -253,6 +348,7 @@ public class HijraCalendar extends Calendar {
 	protected void gregorianToHijri(int year, int month, int day){
 		absoluteToHijri(gregorianToAbsolute(year, month, day));
 	}
+	
 	/**
 	 * Hijri  (year, month, day) converted from gregorian calender
 	 * @param calendar 
@@ -260,6 +356,7 @@ public class HijraCalendar extends Calendar {
 	protected void gregorianToHijri(Calendar calendar){
 		absoluteToHijri(gregorianToAbsolute(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH)));
 	}
+	
 	@Override
 	public void add(int field, int amount) {
 		switch (field) {
@@ -278,7 +375,7 @@ public class HijraCalendar extends Calendar {
 				//plus: add more months.
 				int actualAmountOfDays = 0;
 				for(int i = 0; i < amount; i++){
-					if(get(MONTH)+i < 12)
+					if(get(MONTH)+i < DHU_AL_HIJJAH)
 						actualAmountOfDays += getHijriMonthDays(get(MONTH)+i, get(YEAR));
 					else
 						actualAmountOfDays += getHijriMonthDays((get(MONTH)+i%12), get(YEAR) + (get(MONTH)+i/12));
@@ -291,7 +388,7 @@ public class HijraCalendar extends Calendar {
 				int actualAmountOfDays = 0;
 				for(int i = 1; i <= -amount; i++){
 					if(get(MONTH)-i < 1){
-						int month = (-(get(MONTH)-i%-12)) == 0?12:(-(get(MONTH)-i%-12));
+						int month = (-(get(MONTH)-i%-12)) == 0?DHU_AL_HIJJAH:(-(get(MONTH)-i%-12));
 						actualAmountOfDays += getHijriMonthDays(month , get(YEAR) - (get(MONTH)-i/-12));
 					}else
 						actualAmountOfDays += getHijriMonthDays(get(MONTH)-i, get(YEAR));
