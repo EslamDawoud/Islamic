@@ -1,8 +1,8 @@
-package com.iabdullah.android.util;
+package org.tamrah.android.util;
 
 import java.util.Calendar;
 
-public class HijraMonthDisplayHelper {
+public class MonthDisplayHelper {
 
     // display pref
     private final int mWeekStartDay;
@@ -22,7 +22,7 @@ public class HijraMonthDisplayHelper {
      * @param weekStartDay What day of the week the week should start.
      * @param todayCalendar used to determine calendar type.
      */
-    public HijraMonthDisplayHelper(int year, int month, int weekStartDay, Calendar todayCalendar) {
+    public MonthDisplayHelper(int year, int month, int weekStartDay, Calendar todayCalendar) {
 
         if (weekStartDay < Calendar.SUNDAY || weekStartDay > Calendar.SATURDAY) {
             throw new IllegalArgumentException();
@@ -42,7 +42,7 @@ public class HijraMonthDisplayHelper {
     }
 
 
-    public HijraMonthDisplayHelper(int year, int month, Calendar todayCalendar) {
+    public MonthDisplayHelper(int year, int month, Calendar todayCalendar) {
         this(year, month, Calendar.SUNDAY, todayCalendar);
     }
 
