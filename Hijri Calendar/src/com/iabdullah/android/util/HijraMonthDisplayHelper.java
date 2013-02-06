@@ -1,6 +1,6 @@
 package com.iabdullah.android.util;
 
-import org.tmrah.islamic.hijri.HijraCalendar;
+import org.tamrah.islamic.hijri.HijraCalendar;
 
 public class HijraMonthDisplayHelper {
 

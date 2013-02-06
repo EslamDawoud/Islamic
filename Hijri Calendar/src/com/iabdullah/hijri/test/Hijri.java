@@ -2,7 +2,7 @@ package com.iabdullah.hijri.test;
 
 import java.util.Calendar;
 
-import org.tmrah.islamic.hijri.HijraCalendar;
+import org.tamrah.islamic.hijri.HijraCalendar;
 
 import com.iabdullah.android.util.HijraMonthDisplayHelper;
 

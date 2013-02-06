@@ -1,4 +1,4 @@
-package org.tmrah.islamic.hijri;
+package org.tamrah.islamic.hijri;
 
 import java.util.Calendar;
 /**
