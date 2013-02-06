@@ -30,7 +30,7 @@ public class Hijri {
 		//
 		System.out.println(weekDays[todayDate.get(HijraCalendar.DAY_OF_WEEK)] + " " + todayDate.get(HijraCalendar.DAY_OF_MONTH) + ", " + todayDate.get(HijraCalendar.MONTH) + " " + todayDate.get(HijraCalendar.YEAR));
 		
-		HijraMonthDisplayHelper mHelper = new HijraMonthDisplayHelper(showedDate.get(HijraCalendar.YEAR), showedDate.get(HijraCalendar.MONTH), weekStartDay);
+		HijraMonthDisplayHelper mHelper = new HijraMonthDisplayHelper(showedDate.get(HijraCalendar.YEAR), showedDate.get(HijraCalendar.MONTH), weekStartDay, HijraCalendar.getInstance());
 		
 		class _calendar {
 	    	public int day;
