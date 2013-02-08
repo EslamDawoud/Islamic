@@ -102,6 +102,17 @@ public class HijraCalendar extends Calendar {
 	public HijraCalendar(Calendar calendar){
 		gregorianToHijri(calendar);
 	}
+	/**
+	 * 
+	 * @param year Hijri year
+	 * @param month Hijri month
+	 * @param day Hijri day
+	 */
+	public HijraCalendar(int year, int month, int day){
+		set(YEAR, year);
+		set(MONTH, month);
+		set(DAY_OF_MONTH, day);
+	}
 	
 	public Calendar toGregorianCalendar(){
 		return hijriToGregorian(get(YEAR), get(MONTH), get(DAY_OF_MONTH));
