@@ -112,7 +112,7 @@ public class HijraCalendar extends Calendar {
 		set(YEAR, year);
 		set(MONTH, month);
 		set(DAY_OF_MONTH, day);
-		set(DAY_OF_WEEK, toGregorianCalendar().get(DAY_OF_WEEK));
+		set(DAY_OF_WEEK, getHijriDayOfWeek(year, month, day));
 	}
 	
 	public Calendar toGregorianCalendar(){
