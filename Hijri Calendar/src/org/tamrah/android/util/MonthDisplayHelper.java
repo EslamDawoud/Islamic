@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 public class MonthDisplayHelper {
 
-    // display pref
+	// display pref
     private final int mWeekStartDay;
 
     // holds current month, year, helps compute display
@@ -40,10 +40,39 @@ public class MonthDisplayHelper {
 
         recalculate();
     }
+    
+    /**
+     * @param year The year.
+     * @param month The month.
+     * @param weekStartDay What day of the week the week should start.
+     */
+    public MonthDisplayHelper(int year, int month, int weekStartDay) {
+
+        if (weekStartDay < Calendar.SUNDAY || weekStartDay > Calendar.SATURDAY) {
+            throw new IllegalArgumentException();
+        }
+        mWeekStartDay = weekStartDay;
+
+        mCalendar = Calendar.getInstance();
+        mCalendar.set(Calendar.YEAR, year);
+        mCalendar.set(Calendar.MONTH, month);
+        mCalendar.set(Calendar.DAY_OF_MONTH, 1);
+        mCalendar.set(Calendar.HOUR_OF_DAY, 0);
+        mCalendar.set(Calendar.MINUTE, 0);
+        mCalendar.set(Calendar.SECOND, 0);
+        mCalendar.getTimeInMillis();
+
+        recalculate();
+    }
+
+
+    public MonthDisplayHelper(int year, int month) {
+        this(year, month, Calendar.SUNDAY);
+    }
 
 
     public MonthDisplayHelper(int year, int month, Calendar todayCalendar) {
-        this(year, month, Calendar.SUNDAY, todayCalendar);
+        this(year, month, todayCalendar.getFirstDayOfWeek(), todayCalendar);
     }
 
 
@@ -165,7 +194,7 @@ public class MonthDisplayHelper {
             return false;
         }
 
-        int day = 7 * row + column - mOffset;
+        int day = 7 * row + column - mOffset + 1;
         if (day > mNumDaysInMonth) {
             return false;
         }
@@ -177,7 +206,6 @@ public class MonthDisplayHelper {
     private void recalculate() {
 
         mNumDaysInMonth = mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        System.out.println("mNumDaysInMonth=" + mNumDaysInMonth);
 
         mCalendar.add(Calendar.MONTH, -1);
         mNumDaysInPrevMonth = mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
