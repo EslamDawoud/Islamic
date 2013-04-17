@@ -468,9 +468,9 @@ public class PrayTime {
         times = tuneTimes(times);
         //
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-        calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
+        calendar.set(Calendar.YEAR, this.calendar.get(Calendar.YEAR));
+        calendar.set(Calendar.MONTH, this.calendar.get(Calendar.MONTH));
+        calendar.set(Calendar.DAY_OF_MONTH, this.calendar.get(Calendar.DAY_OF_MONTH));
         
         for (int i = 0; i < 7; i++) {
         	double time = fixhour(times[i] + 0.5 / 60.0); // add 0.5 minutes to round
