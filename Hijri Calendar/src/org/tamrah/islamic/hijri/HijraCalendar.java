@@ -323,6 +323,10 @@ public class HijraCalendar extends Calendar {
 			calendar.set(Calendar.MONTH, mm-2);
 			calendar.set(Calendar.DAY_OF_MONTH, date-d+1);
 		}
+		//Set time
+		for (int i = AM_PM; i < FIELD_COUNT; i++) {
+			calendar.set(i, fields[i]);
+		}
 		return calendar;
 	}
 	
