@@ -3,8 +3,12 @@ package org.tamrah.islamic.hijri;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
+
+/**
+ * @author abdullah alfadhel
+ * @version 0.0.1
+ **/
 
 @SuppressWarnings("serial")
 public class UmmAlQuraCalendar extends Calendar {
