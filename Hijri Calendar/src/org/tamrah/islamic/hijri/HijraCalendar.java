@@ -1,6 +1,7 @@
 package org.tamrah.islamic.hijri;
 
 import java.util.Calendar;
+import java.util.Locale;
 /**
  * The <code>HijraCalendar</code> class is implementation of Muayyad Saleh Alsadi Hijra <a href="http://git.ojuba.org/cgit/hijra">method</a>
  * @author abdullah alfadhel
@@ -99,6 +100,11 @@ public class HijraCalendar extends Calendar {
 		return new HijraCalendar(Calendar.getInstance());
 	}
 	
+	//
+	public static HijraCalendar getInstance(Locale locale){
+		return new HijraCalendar(Calendar.getInstance(locale));
+	}
+	
 	public HijraCalendar(Calendar calendar){
 		gregorianToHijri(calendar);
 	}
@@ -169,8 +175,20 @@ public class HijraCalendar extends Calendar {
 	 * @param day Hijri day
 	 * @return the day number within the year of the Islamic date (year, month, day), 1 for 1/1 in any year
 	 */
-	public int getHijriDayNumber(int year, int month, int day){
+	protected int getHijriDayOfYear(int year, int month, int day){
 		return getHijriDaysBeforeMonth(year, month) + day;
+	}
+	
+	/**
+	 * 
+	 * @param year Hijri year
+	 * @param month Hijri month
+	 * @param day Hijri day
+	 * @return the day number within the year of the Islamic date (year, month, day), 1 for 1/1 in any year
+	 */
+	protected int getHijriWeekOfYear(int year, int month, int day){
+		int days = getHijriDaysBeforeMonth(year, month) + day;
+		return days/7 + (days%7>0?1:0);
 	}
 	
 	/**
@@ -192,7 +210,7 @@ public class HijraCalendar extends Calendar {
 		for (int i = 1; i < y; i++)
 			dc += getHijriYearDays(i);
 		// plus days from the begining of that year
-		dc += getHijriDayNumber (year, month, day) - 1;
+		dc += getHijriDayOfYear (year, month, day) - 1;
 		return dc;
 	}
 	
@@ -347,7 +365,7 @@ public class HijraCalendar extends Calendar {
 	 * @param day
 	 * @return gregorian (year, month, day) converted from Islamic Hijri calender
 	 */
-	public Calendar hijriToGregorian(int year, int month, int day){
+	protected Calendar hijriToGregorian(int year, int month, int day){
 		return absoluteToGregorian( hijriToAbsolute (year, month, day));
 	}
 	
@@ -367,6 +385,16 @@ public class HijraCalendar extends Calendar {
 	 */
 	protected void gregorianToHijri(Calendar calendar){
 		absoluteToHijri(gregorianToAbsolute(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH)));
+		//Set time
+		for (int i = AM_PM; i < FIELD_COUNT; i++) {
+			fields[i] = calendar.get(i);
+		}
+	}
+	
+	@Override
+	public void set(int field, int value) {
+		fields[field] = value;
+		computeFields();
 	}
 	
 	@Override
@@ -421,8 +449,10 @@ public class HijraCalendar extends Calendar {
 
 	@Override
 	protected void computeFields() {
-		// TODO Auto-generated method stub
-
+		fields[WEEK_OF_YEAR] = getHijriWeekOfYear(fields[YEAR], fields[MONTH], fields[DATE]);
+		fields[WEEK_OF_MONTH] = fields[DATE]/7 + (fields[DATE]%7>0?1:0);
+		fields[DAY_OF_YEAR] = getHijriDayOfYear(fields[YEAR], fields[MONTH], fields[DATE]);
+		fields[DAY_OF_WEEK] = getHijriDayOfWeek(fields[YEAR], fields[MONTH], fields[DATE]);
 	}
 
 	@Override
