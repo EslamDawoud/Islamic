@@ -2,30 +2,63 @@ package com.iabdullah.hijri.test;
 
 import java.util.Calendar;
 
+import org.tamrah.android.util.MonthDisplayHelper;
 import org.tamrah.islamic.hijri.UmmAlQuraCalendar;
-
-import NIC.UmmALQura;
 
 public class UmmAlQuraTest {
 
 	public static void main(String[] args) throws Exception {
-		int yg = 2013;
-		int mg = 5;
-		int dg = 5;
-		int[] hijri = UmmALQura.gregorianToHijri(yg, mg, dg);
-		System.out.println(hijri[0] + "-" + hijri[1] + "-" + hijri[2]);
 		//
-		int yh2 = 1434;
-		int mh2 = 6;
-		int dh2 = 25;
-		int[] greg = UmmALQura.hijriToGregorian(yh2, mh2, dh2);
-		System.out.println(greg[0] + "-" + greg[1] + "-" + greg[2]);
+		String[] weekDays = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+		//Week start date. SUN = 1, MON = 2 etc..
+		int weekStartDay = Calendar.SUNDAY;
 		//
 		UmmAlQuraCalendar quraCalendar = UmmAlQuraCalendar.getInstance();
-		System.out.println(quraCalendar.get(Calendar.YEAR) + "-" + quraCalendar.get(Calendar.MONTH) + "-" + quraCalendar.get(Calendar.DATE));
+		quraCalendar.setFirstDayOfWeek(weekStartDay);
+		//
+		System.out.println("Umm AlQura: " + weekDays[quraCalendar.get(Calendar.DAY_OF_WEEK)-1] + " " + quraCalendar.get(Calendar.DAY_OF_MONTH) + ", " + (quraCalendar.get(Calendar.MONTH)) + " " + quraCalendar.get(Calendar.YEAR));
+		//
+		MonthDisplayHelper mHelper = new MonthDisplayHelper(quraCalendar.get(Calendar.YEAR), quraCalendar.get(Calendar.MONTH), weekStartDay, UmmAlQuraCalendar.getInstance());
 		
-		Calendar calendar = quraCalendar.toGregorianCalendar();
-		System.out.println(calendar.get(Calendar.YEAR) + "-" + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DATE));
+		System.out.println(mHelper.getMonth());
+		
+		//6 weeks, 7 days
+	    _calendar tmp3[][] = new _calendar[6][7];
+	    
+	    for(int week=0; week<tmp3.length; week++) {
+	    	int n[] = mHelper.getDigitsForRow(week);
+	    	for(int day=0; day<n.length; day++) {
+	    		if(mHelper.isWithinCurrentMonth(week,day))
+	    			tmp3[week][day] = new _calendar(n[day], true);
+	    		else
+	    			tmp3[week][day] = new _calendar(n[day]);
+	    		
+	    	}
+	    }
+	    int thisDay3 = 0;
+	    if(mHelper.getYear()==quraCalendar.get(Calendar.YEAR) && mHelper.getMonth()==quraCalendar.get(Calendar.MONTH)) {
+	    	thisDay3 = quraCalendar.get(Calendar.DAY_OF_MONTH);
+	    }
+	    //Calendar
+	    for(int i = 0; i < weekDays.length; i++){
+			int day = i + weekStartDay -1;
+			if(day > weekDays.length-1)
+				day -= weekDays.length;
+			System.out.print(weekDays[day] + "\t");
+		}
+		System.out.println();
+		//String[][] table = new String[6][7];
+		for (int week = 0; week < tmp3.length; week++) {
+			for (int day = 0; day < tmp3[week].length; day++) {
+				if(tmp3[week][day].day == thisDay3 && tmp3[week][day].thisMonth)
+					System.out.print("[" + tmp3[week][day].day + "]\t");
+				else if(tmp3[week][day].thisMonth)
+					System.out.print(tmp3[week][day].day + "\t");
+				else
+					System.out.print(tmp3[week][day].day + "<\t");
+			}
+			System.out.println();
+		}
 	}
 
 }
