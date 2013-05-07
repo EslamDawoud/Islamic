@@ -252,7 +252,7 @@ public class HijraCalendar extends Calendar {
 		fields[YEAR] = mYEAR;
 		fields[MONTH] = mMONTH;
 		fields[DAY_OF_MONTH] = mDAY;
-		fields[DAY_OF_WEEK] = getHijriDayOfWeek(mYEAR, mMONTH, mDAY);
+		computeFields();
 	}
 	
 	/**
@@ -441,39 +441,28 @@ public class HijraCalendar extends Calendar {
 			gregorianToHijri(calendarDAY_OF_YEAR);
 			break;
 		case MONTH:
+			int month = internalGet(MONTH) + amount;
+			int year = (month-1) / getMaximum(MONTH);
 			if(amount > 0){
-				//plus: add more months.
-				int actualAmountOfDays = 0;
-				for(int i = 0; i < amount; i++){
-					if(get(MONTH)+i < DHU_AL_HIJJAH)
-						actualAmountOfDays += getHijriMonthDays(get(MONTH)+i, get(YEAR));
-					else
-						actualAmountOfDays += getHijriMonthDays((get(MONTH)+i%12), get(YEAR) + (get(MONTH)+i/12));
+				//PLUS
+				fields[YEAR] += year;
+				if(month % getMaximum(MONTH) == 0)
+					set(MONTH, DHU_AL_HIJJAH);
+				else
+					set(MONTH, month % getMaximum(MONTH));
+			}else{
+				//MINUS
+				if(month > 0){
+					set(MONTH, month);
+				}else{
+					year--;
+					fields[YEAR] += year;
+					set(MONTH, getMaximum(MONTH) + (month % getMaximum(MONTH)));
 				}
-				Calendar nextMonth = toGregorianCalendar();
-				nextMonth.add(DAY_OF_YEAR, actualAmountOfDays);
-				gregorianToHijri(nextMonth);
-			}else if(amount < 0){
-				//minus: remove months.
-				int actualAmountOfDays = 0;
-				for(int i = 1; i <= -amount; i++){
-					if(get(MONTH)-i < 1){
-						int month = (-(get(MONTH)-i%-12)) == 0?DHU_AL_HIJJAH:(-(get(MONTH)-i%-12));
-						actualAmountOfDays += getHijriMonthDays(month , get(YEAR) - (get(MONTH)-i/-12));
-					}else
-						actualAmountOfDays += getHijriMonthDays(get(MONTH)-i, get(YEAR));
-				}
-				Calendar preMonth = toGregorianCalendar();
-				preMonth.add(DAY_OF_YEAR, -actualAmountOfDays);
-				gregorianToHijri(preMonth);
 			}
 			break;
-		case YEAR:
-//			add(MONTH, amount * getActualMaximum(MONTH));
-			set(field, fields[field] + amount);
-			break;
 		default:
-			set(field, get(field) + amount);
+			set(field, internalGet(field) + amount);
 			break;
 		}
 	}
