@@ -10,9 +10,10 @@ import java.util.Locale;
  * @version 0.0.1
  **/
 
-@SuppressWarnings("serial")
 public class UmmAlQuraCalendar extends Calendar {
-	
+	// Proclaim serialization
+	private static final long serialVersionUID = 857982800223956724L;
+
 	/**
      * Value of the {@link #MONTH} field indicating the
      * first month of the year in the Hijri calendar.
@@ -114,7 +115,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	
 	public Calendar toGregorianCalendar(){
 		Calendar calendar = Calendar.getInstance();
-		int[] date = UmmALQura.hijriToGregorian(get(YEAR), get(MONTH), get(DATE));
+		int[] date = UmmALQura.hijriToGregorian(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
 		
 		calendar.set(YEAR, date[0]);
 		calendar.set(MONTH, date[1]);
@@ -136,19 +137,68 @@ public class UmmAlQuraCalendar extends Calendar {
 
 	@Override
 	protected void computeFields() {
-		// TODO Auto-generated method stub
+		fields[DAY_OF_WEEK] = UmmALQura.getDayOfWeek(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
+		fields[WEEK_OF_MONTH] = internalGet(DATE)/7 + (internalGet(DATE)%7>0?1:0);
 	}
 	
 	@Override
 	public void set(int field, int value) {
 		fields[field] = value;
-		computeFields();
+		if(field == YEAR || field == MONTH || field == DATE)
+			computeFields();
 	}
 
 	@Override
 	public void add(int field, int amount) {
-		// TODO Auto-generated method stub
+		// If amount == 0, do nothing even the given field is out of
+        if (amount == 0) {
+            return;   // Do nothing!
+        }
 
+        if (field < 0 || field >= ZONE_OFFSET) {
+            throw new IllegalArgumentException();
+        }
+        
+		switch (field) {
+		case YEAR:
+			if(internalGet(field) + amount > getMaximum(field) || internalGet(field) + amount < getMinimum(field))
+				throw new IllegalArgumentException();
+			set(field, fields[field] + amount);
+			break;
+		case MONTH:
+			int month = internalGet(MONTH) + amount;
+			int year = (month-1) / getMaximum(MONTH);
+			if(amount > 0){
+				//PLUS
+				fields[YEAR] += year;
+				if(month % getMaximum(MONTH) == 0)
+					set(MONTH, DHU_AL_HIJJAH);
+				else
+					set(MONTH, month % getMaximum(MONTH));
+			}else{
+				//MINUS
+				if(month > 0){
+					set(MONTH, month);
+				}else{
+					year--;
+					fields[YEAR] += year;
+					set(MONTH, getMaximum(MONTH) + (month % getMaximum(MONTH)));
+				}
+			}
+			break;
+		case DAY_OF_MONTH:
+			Calendar calendarDAY_OF_MONTH = toGregorianCalendar();
+			calendarDAY_OF_MONTH.add(DAY_OF_MONTH, amount);
+			int[] date = UmmALQura.gregorianToHijri(calendarDAY_OF_MONTH.get(YEAR), calendarDAY_OF_MONTH.get(MONTH)+1, calendarDAY_OF_MONTH.get(DATE));
+			set(YEAR, date[0]);
+			set(MONTH, date[1]);
+			set(DAY_OF_MONTH, date[2]);
+			set(DAY_OF_WEEK, date[3]);
+			break;
+
+		default:
+			break;
+		}
 	}
 
 	@Override
@@ -200,7 +250,7 @@ public class UmmAlQuraCalendar extends Calendar {
 		int ret = 0;
 		switch (field) {
 		case DAY_OF_MONTH:
-			ret = UmmALQura.hMonthLength(get(YEAR), get(MONTH));
+			ret = UmmALQura.hMonthLength(internalGet(YEAR), internalGet(MONTH));
 			break;
 		case DAY_OF_WEEK:
 			ret = 7;
@@ -330,33 +380,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	    private static int HEndYear = 1600;
 	    private static int[] MonthMap = { 17749, 12971, 14647, 17078, 13686, 17260, 15189, 19114, 18774, 13470, 14685, 17082, 13749, 17322, 19275, 19094, 17710, 12973, 13677, 19290, 18258, 20261, 24202, 19734, 19030, 19125, 18100, 19881, 19346, 19237, 17995, 15003, 17242, 18137, 17876, 19877, 19786, 19093, 17718, 14709, 17140, 18153, 18132, 18089, 17717, 12893, 13501, 14778, 17332, 19305, 19242, 19029, 17581, 14941, 17114, 14041, 20138, 24212, 19754, 19542, 17582, 14957, 17770, 19797, 19786, 19091, 13611, 14939, 17722, 14005, 20137, 23890, 19753, 19029, 17581, 13677, 19178, 18148, 20177, 23970, 19114, 18778, 17114, 13753, 19378, 18276, 18121, 17749, 12971, 13531, 19130, 17844, 19881, 23890, 19109, 18733, 12909, 14573, 17114, 15061, 19109, 19019, 13463, 14647, 17078, 14709, 19817, 19794, 19605, 18731, 12891, 13531, 18901, 17874, 19877, 19786, 19093, 17741, 15021, 17322, 19410, 19396, 19337, 19093, 13613, 13741, 15210, 18132, 19913, 19858, 19110, 18774, 12974, 13677, 13162, 15189, 19114, 14669, 13469, 14685, 12986, 13749, 17834, 15701, 19098, 14638, 12910, 13661, 15066, 18132, 18085, 13643, 14999, 17742, 15022, 17836, 15273, 19858, 19237, 13899, 15531, 17754, 15189, 18130, 16037, 20042, 19093, 13613, 15021, 17260, 14169, 18130, 18069, 13613, 14939, 13498, 14778, 17332, 15209, 19282, 19110, 13494, 14701, 17132, 14041, 20146, 19796, 19754, 19030, 13486, 14701, 19818, 19284, 19241, 14995, 13611, 14935, 13622, 15029, 18090, 16019, 19733, 17963, 15451, 17722, 14005, 19890, 23908, 19753, 19029, 17581, 14701, 19178, 18152, 20177, 23972, 19786, 19050, 17114, 13753, 19314, 23400, 18129, 18005, 13483, 14683, 17082, 13749, 19881, 23890, 19622, 18766, 17518, 14685, 17626, 15061, 19114, 19021, 13467, 14647, 17590, 14709, 19818, 19794, 19109, 18763, 12971, 13659, 19161, 17874, 19909, 23954, 19237, 17749, 15029, 17844, 19369, 18338, 18245, 17811, 15019, 17622, 18902, 17874, 19365, 19274, 19093, 17581, 12637, 13021, 18906, 17844, 17833, 13613, 12891, 14519, 12662, 13677, 19306, 19146, 19094, 17707, 12635, 12987, 13750, 19882, 23444, 19782, 19085, 17709, 15005, 17754, 14165, 18249, 20243, 20042, 19094, 17750, 14005, 19370, 23444 };
 	    private static short[] gmonth = { 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 };
-	    /* makes it circular m[0]=m[12] & m[13]=m[1] */
-	    private static short[] smonth = { 31, 30, 30, 30, 30, 30, 29, 31, 31, 31, 31, 31, 31, 30 };
-	    /* makes it circular m[0]=m[12] & m[13]=m[1]  */
-	    //int  BH2GA(int yh,int mh,int *yg,int *mg, int *dg,int *dayweek);
-	    //int  G2HA(int yg,int mg, int dg,int *yh,int *mh,int *dh,int *dayweek);
-	    //int  H2GA(int *yh,int *mh,int *dh,int *yg,int *mg, int *dg,int *dayweek);
-	    //void S2G(int ys,int ms,int ds,int *yg,int *mg,int *dg);
-	    //void G2S(int yg,int mg,int dg,int *ys,int *ms,int *ds);
-	    //double GCalendarToJD(int yg,int mg, double dg );
-	    //double JDToGCalendar(double JD, int *yy,int *mm, int *dd);
-	    //int GLeapYear(int year);
-	    //void GDateAjust(int *yg,int *mg,int *dg);
-	    //int DayWeek(long JulianD);
-	    //double SCalendarToJD(int ys, int ms,double ds );
-	    //void JDToSCalendar(double JD, int *ys, int *ms,int *ds);
-	    //int HSLeapYear(long year);
-	    //void SDateAjust(int *ys,int *ms,int *ds);
-	    //void JDToHCalendar(double JD,int *yh,int *mh,int *dh);
-	    //double HCalendarToJD(int yh,int mh,int dh);
-	    //int HMonthLength(int yh,int mh);
-	    //double MSCalendarToJD(int ys, int ms,double ds );
-	    //void JDToMSCalendar(double JD, int *ys, int *ms,int *ds);
-	    //int HMSLeapYear(long year);
-	    //void MS2G(int ys,int ms,int ds,int *yg,int *mg,int *dg);
-	    //void G2MS(int ys,int ms,int ds,int *yg,int *mg,int *dg);
-	    //double ip(double x);
-	    //int mod(double x, double y);
+
 	    /****************************************************************************/
 	    /* Name:    BH2GA                                                            */
 	    /* Type:    Procedure                                                       */
@@ -425,6 +449,40 @@ public class UmmAlQuraCalendar extends Calendar {
 	        dayweek.setValue(longHolder.intValue());
 	        flag = 1;
 	        return flag;
+	    }
+	    
+	    /**
+	     * 
+	     */
+	    private static int getDayOfWeek(int yh, int mh, int dh){
+	    	int flag, Dy, m, b;
+	        long JD;
+	        double GJD;
+			doubleHolder = hCalendarToJD(yh,mh,dh);
+	        JD = doubleHolder.longValue();
+	        /* estimate JD of the begining of the year */
+	        Dy = MonthMap[yh - HStartYear] / 4096;
+	        /* Mask 1111000000000000 */
+	        GJD = JD - 3 + Dy;
+	        /* correct the JD value from stored tables  */
+	        b = MonthMap[yh - HStartYear];
+	        b = b - Dy * 4096;
+	        for (m = 1;m < mh;m++)
+	        {
+	            flag = b % 2;
+	            /* Mask for the current month */
+	            if (flag == 1)
+	                Dy = 30;
+	            else
+	                Dy = 29; 
+	            GJD = GJD + Dy;
+	            /* Add the months lengths before mh */
+	            b = (b - flag) / 2;
+	        }
+	        doubleHolder = GJD;
+	        JD = doubleHolder.longValue();
+	        longHolder = (JD + 1) % 7 +1;
+	        return longHolder.intValue();
 	    }
 
 	    /* date has been found */
@@ -803,47 +861,6 @@ public class UmmAlQuraCalendar extends Calendar {
 	        return found;
 	    }
 
-	    /* Make sure that the month is 30days if not make adjustment */
-	    /****************************************************************************/
-	    /* Name:    S2G                                                             */
-	    /* Type:    Procedure                                                       */
-	    /* Purpose: convert SHdate(year,month,day) to Gdate(year,month,day)         */
-	    /* Arguments:                                                               */
-	    /* Input:  Solar Hijrah  date: year:ys, month:ms, day:ds                    */
-	    /* Output: Gregorian date: year:yg, month:mg, day:dg                        */
-	    /****************************************************************************/
-	    private static void s2G(int ys, int ms, int ds, RefSupport<Integer> yg, RefSupport<Integer> mg, RefSupport<Integer> dg) throws Exception {
-	        double SJD;
-	        SJD = sCalendarToJD(ys, ms, ds);
-	        RefSupport<Integer> refVar___56 = new RefSupport<Integer>(yg.getValue());
-	        RefSupport<Integer> refVar___57 = new RefSupport<Integer>(mg.getValue());
-	        RefSupport<Integer> refVar___58 = new RefSupport<Integer>(dg.getValue());
-	        jDToGCalendar(SJD,refVar___56,refVar___57,refVar___58);
-	        yg.setValue(refVar___56.getValue());
-	        mg.setValue(refVar___57.getValue());
-	        dg.setValue(refVar___58.getValue());
-	    }
-
-	    /****************************************************************************/
-	    /* Name:    G2S                                                             */
-	    /* Type:    Procedure                                                       */
-	    /* Purpose: convert Gdate(year,month,day) to SHdate(year,month,day)         */
-	    /* Arguments:                                                               */
-	    /* Input: Gregorian date: year:yg, month:mg, day:dg                         */
-	    /* Ouput: Solar Hijrah  date: year:ys, month:ms, day:ds                     */
-	    /****************************************************************************/
-	    private static void g2S(int yg, int mg, int dg, RefSupport<Integer> ys, RefSupport<Integer> ms, RefSupport<Integer> ds) throws Exception {
-	        double SJD;
-	        SJD = gCalendarToJD(yg, mg, dg + 0.5);
-	        RefSupport<Integer> refVar___59 = new RefSupport<Integer>(ys.getValue());
-	        RefSupport<Integer> refVar___60 = new RefSupport<Integer>(ms.getValue());
-	        RefSupport<Integer> refVar___61 = new RefSupport<Integer>(ds.getValue());
-	        jDToSCalendar(SJD,refVar___59,refVar___60,refVar___61);
-	        ys.setValue(refVar___59.getValue());
-	        ms.setValue(refVar___60.getValue());
-	        ds.setValue(refVar___61.getValue());
-	    }
-
 	    /****************************************************************************/
 	    /* Name:    JDToGCalendar						    */
 	    /* Type:    Procedure                                                       */
@@ -1018,214 +1035,6 @@ public class UmmAlQuraCalendar extends Calendar {
 	         
 	    }
 
-	    /*
-	      The day of the week is obtained as
-	      Dy=(Julian+1)%7
-	      Dy=0 Sunday
-	      Dy=1 Monday
-	      ...
-	      Dy=6 Saturday
-	    */
-	    private static int dayWeek(long JulianD) throws Exception {
-	        int Dy;
-	        longHolder = (JulianD + 1) % 7;
-	        Dy = longHolder.intValue();
-	        return Dy;
-	    }
-
-	    /****************************************************************************/
-	    /* Name:    HSLeapYear						            */
-	    /* Type:    Function                                                        */
-	    /* Purpose: Determines of  HSdate(year) is leap or not            	    */
-	    /* Arguments:                                                               */
-	    /* Input : Hijrah Solar date: year			                    */
-	    /* Output:  0:year not leap   1:year is leap                                */
-	    /****************************************************************************/
-	    private static int hSLeapYear(long year) throws Exception {
-	        /* Leap year test for hijrah solar years */
-	        int r1, r2;
-	        if (year == 0)
-	            return 0;
-	         
-	        /* not leap year */
-	        r1 = mod(year, 128);
-	        r2 = mod(r1, 4);
-	        if (r1 == 0)
-	            return 0;
-	         
-	        /*  year is not leap */
-	        if (r2 == 0)
-	            return 1;
-	         
-	        return 0;
-	    }
-
-	    /* year is leap      */
-	    /****************************************************************************/
-	    /* Name:    SCalendarToJD						    */
-	    /* Type:    Function                                                        */
-	    /* Purpose: convert Sdate(year,month,day) to Julian Day            	    */
-	    /* Arguments:                                                               */
-	    /* Input : Hijrah Solar date: year:ys, month:ms, day:ds                     */
-	    /* Output:  The Julian Day: JD                                              */
-	    /****************************************************************************/
-	    private static double sCalendarToJD(int ys, int ms, double ds) throws Exception {
-	        /*
-	          Given Solar Hijrah date find  JD
-	         */
-	        int a, b, m6;
-	        double T1, T2 = 0, Tr;
-	        a = (ys - 1) / 128;
-	        b = (ys - 1) / 4;
-	        b = b - a;
-	        T1 = (ys - 1) * 365.0 + b + ds;
-	        m6 = 29 + hSLeapYear(ys);
-	        if (ms < 7)
-	            T2 = 30 * (ms - 1);
-	         
-	        if (ms == 7)
-	            T2 = 30.0 * 5 + m6;
-	         
-	        if (ms > 7)
-	            T2 = 30.0 * 5 + m6 + 31 * (ms - 7);
-	         
-	        Tr = T1 + T2 + 1948506.0;
-	        return Tr;
-	    }
-
-	    /*  Add JD for 23/9/622 the first Solar Hijrah date*/
-	    /****************************************************************************/
-	    /* Name:    JDToSCalendar						    */
-	    /* Type:    Procedure                                                       */
-	    /* Purpose: convert Julian Day to Sdate(year,month,day)  		    */
-	    /* Arguments:                                                               */
-	    /* Input:  The Julian Day: JD                                               */
-	    /* Output : Solar Hijrah date: year:ys, month:ms, day:ds                    */
-	    /****************************************************************************/
-	    private static void jDToSCalendar(double JD, RefSupport<Integer> ys, RefSupport<Integer> ms, RefSupport<Integer> ds) throws Exception {
-	        /*
-	           From JD day find Solar Hijrah date
-	         */
-	        int r1, r2, m6;
-	        double J, dd;
-	        J = JD - 1948506;
-	        /*  substract JD for 23/9/622 the first Solar Hijrah date*/
-	        doubleHolder = J / 365;
-	        ys.setValue(doubleHolder.intValue());
-	        ys.setValue(ys.getValue()-1);
-	        r1 = (ys.getValue() - mod(ys.getValue(), 128)) / 128;
-	        /* Find the number of non-leap years divisible by 4*/
-	        r2 = (ys.getValue() - mod(ys.getValue(), 4)) / 4;
-	        /* Find the number of leap years */
-	        J = J - (r2 - r1);
-	        doubleHolder = J / 365;
-	        ys.setValue(doubleHolder.intValue());
-	        dd = J - ys.getValue() * 365.0;
-	        doubleHolder = dd;
-	        ds.setValue(doubleHolder.intValue());
-	        ys.setValue(ys.getValue()+1);
-	        if (ds.getValue() < 1)
-	        {
-	        	ys.setValue(ys.getValue()-1);
-	            ds.setValue(ds.getValue() + 365);
-	        }
-	         
-	        ms.setValue(1);
-	        while (ds.getValue() > 30 && ms.getValue() < 6)
-	        {
-	        	ms.setValue(ms.getValue()+1);
-	            ds.setValue(ds.getValue() - 30);
-	        }
-	        m6 = 29 + hSLeapYear(ys.getValue());
-	        if (ds.getValue() > m6 && ms.getValue() == 6)
-	        {
-	        	ms.setValue(ms.getValue()+1);
-	            ds.setValue(ds.getValue() - m6);
-	        }
-	         
-	        while (ds.getValue() > 31)
-	        {
-	        	ms.setValue(ms.getValue()+1);
-	            ds.setValue(ds.getValue() - 31);
-	        }
-	        if (ds.getValue() == 0)
-	        	ds.setValue(ds.getValue()+1);
-	         
-	    }
-
-	    /****************************************************************************/
-	    /* Name:    SDateAjust							    */
-	    /* Type:    Procedure                                                       */
-	    /* Purpose: Adjust the S Dates by making sure that the month lengths        */
-	    /*	    are correct if not so take the extra days to next month or year */
-	    /* Arguments:                                                               */
-	    /* Input: Hijrah Solar date: year:ys, month:ms, day:ds                      */
-	    /* Output: corrected Hijrah Solar date: year:ys, month:ms, day:ds           */
-	    /****************************************************************************/
-	    private static void sDateAjust(RefSupport<Integer> ys, RefSupport<Integer> ms, RefSupport<Integer> ds) throws Exception {
-	        /*
-	             Adjust Solar Hijrah Dates
-	           */
-	        int dys;
-	        /* Make sure that dates are within the correct values */
-	        /*  Underflow  */
-	        if (ms.getValue() < 1)
-	        {
-	            /* months underflow */
-	            ms.setValue(12 + ms.getValue());
-	            /* plus as the underflow months is negative */
-	            ys.setValue(ys.getValue() - 1);
-	        }
-	         
-	        if (ds.getValue() < 1)
-	        {
-	            /* days underflow */
-	            ms.setValue(ms.getValue() - 1);
-	            /* month becomes the previous month */
-	            ds.setValue(smonth[ms.getValue()] + ds.getValue());
-	            /* number of days of the month less the underflow days (it is plus as the sign of the day is negative) */
-	            if (ms.getValue() == 6)
-	                ds.setValue(ds.getValue() + hSLeapYear(ys.getValue()));
-	             
-	            if (ms.getValue() < 1)
-	            {
-	                /* months underflow */
-	                ms.setValue(12 + ms.getValue());
-	                /* plus as the underflow months is negative */
-	                ys.setValue(ys.getValue() - 1);
-	            }
-	             
-	        }
-	         
-	        /* Overflow  */
-	        if (ms.getValue() > 12)
-	        {
-	            /* months */
-	            ms.setValue(ms.getValue() - 12);
-	            ys.setValue(ys.getValue() + 1);
-	        }
-	         
-	        if (ms.getValue() == 6)
-	            dys = smonth[ms.getValue()] + hSLeapYear(ys.getValue());
-	        else
-	            /* number of days in the current month */
-	            dys = smonth[ms.getValue()]; 
-	        if (ds.getValue() > dys)
-	        {
-	            /* days overflow */
-	            ds.setValue(ds.getValue() - dys);
-	            ms.setValue(ms.getValue() + 1);
-	            if (ms.getValue() > 12)
-	            {
-	                /* months */
-	                ms.setValue(ms.getValue() - 12);
-	                ys.setValue(ys.getValue() + 1);
-	            }
-	             
-	        }
-	         
-	    }
-
 	    /****************************************************************************/
 	    /* Name:    HCalendarToJD						    */
 	    /* Type:    Function                                                        */
@@ -1234,7 +1043,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Input : Hijrah  date: year:yh, month:mh, day:dh                          */
 	    /* Output:  The Estimated Julian Day: JD                                    */
 	    /****************************************************************************/
-	    private static double hCalendarToJD(int yh, int mh, int dh) throws Exception {
+	    private static double hCalendarToJD(int yh, int mh, int dh) {
 	        /*
 	           Estimating The JD for hijrah dates
 	           this is an approximate JD for the given hijrah date
@@ -1313,134 +1122,6 @@ public class UmmAlQuraCalendar extends Calendar {
 	        return r;
 	    }
 
-	    /**************************************************************************/
-	    /**************************************************************************/
-	    /**************************************************************************/
-	    /*              Modified Solar Hijrah Years                               */
-	    /**************************************************************************/
-	    private static int hMSLeapYear(long year) throws Exception {
-	        /* Leap year test for hjirah Modified solar years */
-	        int Leap;
-	        longHolder = year + 622;
-	        Leap = gLeapYear(longHolder.intValue());
-	        return Leap;
-	    }
-
-	    // Leap year the same time as  Gyear leaps
-	    private static double mSCalendToJD(double ys, int ms, int ds) throws Exception {
-	        /*
-	          Given Solar Hijrah date find  JD
-	         */
-	        int a, b, c, m6;
-	        double T1, T2 = 0, Tr, yg;
-	        yg = ys + 622;
-	        doubleHolder = (yg - 1) / 100;
-	        a = doubleHolder.intValue();
-	        doubleHolder = (yg - 1) / 4;
-	        b = doubleHolder.intValue();
-	        doubleHolder = (yg - 1) / 400;
-	        c = doubleHolder.intValue();
-	        b = b + c - a - 151;
-	        T1 = (ys - 1) * 365.0 + b + ds;
-	        doubleHolder = round(ys);
-	        m6 = 29 + hMSLeapYear(doubleHolder.longValue());
-	        if (ms < 7)
-	            T2 = 30 * (ms - 1);
-	         
-	        if (ms == 7)
-	            T2 = 30.0 * 5 + m6;
-	         
-	        if (ms > 7)
-	            T2 = 30.0 * 5 + m6 + 31 * (ms - 7);
-	         
-	        Tr = T1 + T2 + 1948506.0;
-	        return Tr;
-	    }
-
-	    private static void jDToMSCalend(double JD, RefSupport<Integer> ys, RefSupport<Integer> ms, RefSupport<Integer> ds) throws Exception {
-	        /*
-	           From JD day find Solar Hijrah date
-	         */
-	        int r1, r2, r3, m6;
-	        double J, dd, yg;
-	        J = JD - 1948506;
-	        /* substract JD for 23/9/622 */
-	        doubleHolder = J / 365;
-	        ys.setValue(doubleHolder.intValue());
-	        ys.setValue(ys.getValue()-1);
-	        yg = ys.getValue() + 622;
-	        doubleHolder = round(yg - mod(yg, 400)) / 400;
-	        r1 = doubleHolder.intValue();
-	        doubleHolder = round(yg - mod(yg, 4)) / 4;
-	        r2 = doubleHolder.intValue();
-	        doubleHolder = round(yg - mod(yg, 100)) / 100;
-	        r3 = doubleHolder.intValue();
-	        J = J - (r2 + r1 - r3) + 151;
-	        /* 151=number of leap days in 622years */
-	        doubleHolder = round(J / 365);
-	        ys.setValue(doubleHolder.intValue());
-	        //double to Int32
-	        dd = J - ys.getValue() * 365.0;
-	        if (dd < 32)
-	            dd = dd - hMSLeapYear(ys.getValue());
-	         
-	        ds.setValue((int)dd);
-	        ys.setValue(ys.getValue()+1);
-	        if (ds.getValue() < 1)
-	        {
-	            ys.setValue(ys.getValue()-1);
-	            ds.setValue(ds.getValue() + 365);
-	        }
-	         
-	        ms.setValue(1);
-	        while ((ds.getValue()) > 30 && (ms.getValue()) < 6)
-	        {
-	        	ms.setValue(ms.getValue()+1);
-	            ds.setValue(ds.getValue() - 30);
-	        }
-	        m6 = 29 + hMSLeapYear(ys.getValue());
-	        if (ds.getValue() > m6 && ms.getValue() == 6)
-	        {
-	            ms.setValue(ms.getValue()+1);
-	            ds.setValue(ds.getValue() - m6);
-	        }
-	         
-	        while (ds.getValue() > 31 && ms.getValue() > 6)
-	        {
-	            ms.setValue(ms.getValue()+1);
-	            ds.setValue(ds.getValue() - 31);
-	        }
-	        if (ds.getValue() == 0)
-	        	ds.setValue(ds.getValue()+1);
-	         
-	    }
-
-	    private static void mS2G(int ys, int ms, int ds, RefSupport<Integer> yg, RefSupport<Integer> mg, RefSupport<Integer> dg) throws Exception {
-	        double SJD;
-	        int h, m, s;
-	        SJD = mSCalendToJD(ds, ms, ys);
-	        RefSupport<Integer> refVar___62 = new RefSupport<Integer>(yg.getValue());
-	        RefSupport<Integer> refVar___63 = new RefSupport<Integer>(mg.getValue());
-	        RefSupport<Integer> refVar___64 = new RefSupport<Integer>(dg.getValue());
-	        jDToGCalendar(SJD,refVar___62,refVar___63,refVar___64);
-	        yg.setValue(refVar___62.getValue());
-	        mg.setValue(refVar___63.getValue());
-	        dg.setValue(refVar___64.getValue());
-	    }
-
-	    private static void g2MS(int yg, int mg, int dg, RefSupport<Integer> ys, RefSupport<Integer> ms, RefSupport<Integer> ds) throws Exception {
-	        double SJD;
-	        SJD = gCalendarToJD(yg, mg, dg + 0.5);
-	        RefSupport<Integer> refVar___65 = new RefSupport<Integer>(ys.getValue());
-	        RefSupport<Integer> refVar___66 = new RefSupport<Integer>(ms.getValue());
-	        RefSupport<Integer> refVar___67 = new RefSupport<Integer>(ds.getValue());
-	        jDToMSCalend(SJD,refVar___65,refVar___66,refVar___67);
-	        ys.setValue(refVar___65.getValue());
-	        ms.setValue(refVar___66.getValue());
-	        ds.setValue(refVar___67.getValue());
-	    }
-
-	    
 	    private static double round(double d, int decimalPlace) {
 	        BigDecimal bd = new BigDecimal(d);
 	        bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
