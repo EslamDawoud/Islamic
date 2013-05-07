@@ -5,7 +5,7 @@ import java.util.Locale;
 /**
  * The <code>HijraCalendar</code> class is implementation of Muayyad Saleh Alsadi Hijra <a href="http://git.ojuba.org/cgit/hijra">method</a>
  * @author abdullah alfadhel
- * @version 0.0.2
+ * @version 0.0.3
  *
  */
 public class HijraCalendar extends Calendar {
@@ -16,6 +16,16 @@ public class HijraCalendar extends Calendar {
 	protected static final int CONTS_A = 48;
 	//Julian 0622-7-16 = gregorian 0759-6-11 (I think it should be 622, 7, 19)
 	protected static final int HIJRI_EPOCH = 227015;
+	
+	/**
+	 * 
+	 */
+	static final int AH = 1;
+	
+	/**
+	 * 
+	 */
+	static final int BH = 0;
 	
     /**
      * Value of the {@link #MONTH} field indicating the
@@ -115,14 +125,15 @@ public class HijraCalendar extends Calendar {
 	 * @param day Hijri day
 	 */
 	public HijraCalendar(int year, int month, int day){
-		set(YEAR, year);
-		set(MONTH, month);
-		set(DAY_OF_MONTH, day);
-		set(DAY_OF_WEEK, getHijriDayOfWeek(year, month, day));
+		fields[ERA] = AH;
+		fields[YEAR] = year;
+		fields[MONTH] = month;
+		fields[DAY_OF_MONTH] = day;
+		fields[DAY_OF_WEEK] = getHijriDayOfWeek(year, month, day);
 	}
 	
 	public Calendar toGregorianCalendar(){
-		return hijriToGregorian(get(YEAR), get(MONTH), get(DAY_OF_MONTH));
+		return hijriToGregorian(internalGet(YEAR), internalGet(MONTH), internalGet(DAY_OF_MONTH));
 	}
 	
 	/**
@@ -237,10 +248,11 @@ public class HijraCalendar extends Calendar {
 		}
 		//
 		int mDAY = 1 + date - d;
-		set(YEAR, mYEAR);
-		set(MONTH, mMONTH);
-		set(DAY_OF_MONTH, mDAY);
-		set(DAY_OF_WEEK, getHijriDayOfWeek(mYEAR, mMONTH, mDAY));
+		fields[ERA] = AH;
+		fields[YEAR] = mYEAR;
+		fields[MONTH] = mMONTH;
+		fields[DAY_OF_MONTH] = mDAY;
+		fields[DAY_OF_WEEK] = getHijriDayOfWeek(mYEAR, mMONTH, mDAY);
 	}
 	
 	/**
@@ -348,7 +360,7 @@ public class HijraCalendar extends Calendar {
 	 * @return the day-of-the-week index of hijri (year,month,day) Date, 0 for Sunday, 1 for Monday, etc.
 	 */
 	protected int getHijriDayOfWeek(int year, int month, int day){
-		return hijriToAbsolute(year, month, day) % 7;
+		return hijriToAbsolute(year, month, day) % 7 + 1;
 	}
 	
 	/**
@@ -397,12 +409,26 @@ public class HijraCalendar extends Calendar {
 	
 	@Override
 	public void set(int field, int value) {
-		fields[field] = value;
-		computeFields();
+		if(field == YEAR && value < 0){
+			fields[YEAR] = -value;
+			fields[ERA] = BH;
+		}else
+			fields[field] = value;
+		if(field == YEAR || field == MONTH || field == DATE)
+			computeFields();
 	}
 	
 	@Override
 	public void add(int field, int amount) {
+		// If amount == 0, do nothing even the given field is out of
+        if (amount == 0) {
+            return;   // Do nothing!
+        }
+
+        if (field < 0 || field >= ZONE_OFFSET) {
+            throw new IllegalArgumentException();
+        }
+        
 		switch (field) {
 		case DAY_OF_MONTH:
 			Calendar calendarDAY_OF_MONTH = toGregorianCalendar();
@@ -443,7 +469,8 @@ public class HijraCalendar extends Calendar {
 			}
 			break;
 		case YEAR:
-			add(MONTH, amount * getActualMaximum(MONTH));
+//			add(MONTH, amount * getActualMaximum(MONTH));
+			set(field, fields[field] + amount);
 			break;
 		default:
 			set(field, get(field) + amount);
@@ -453,10 +480,10 @@ public class HijraCalendar extends Calendar {
 
 	@Override
 	protected void computeFields() {
-		fields[WEEK_OF_YEAR] = getHijriWeekOfYear(fields[YEAR], fields[MONTH], fields[DATE]);
-		fields[WEEK_OF_MONTH] = fields[DATE]/7 + (fields[DATE]%7>0?1:0);
-		fields[DAY_OF_YEAR] = getHijriDayOfYear(fields[YEAR], fields[MONTH], fields[DATE]);
-		fields[DAY_OF_WEEK] = getHijriDayOfWeek(fields[YEAR], fields[MONTH], fields[DATE]);
+		fields[WEEK_OF_YEAR] = getHijriWeekOfYear(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
+		fields[WEEK_OF_MONTH] = internalGet(DATE)/7 + (internalGet(DATE)%7>0?1:0);
+		fields[DAY_OF_YEAR] = getHijriDayOfYear(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
+		fields[DAY_OF_WEEK] = getHijriDayOfWeek(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
 	}
 
 	@Override
