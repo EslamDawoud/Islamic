@@ -18,9 +18,10 @@ public class UmmAlQuraTest {
 		//
 		System.out.println("Umm AlQura: " + weekDays[quraCalendar.get(Calendar.DAY_OF_WEEK)-1] + " " + quraCalendar.get(Calendar.DAY_OF_MONTH) + ", " + (quraCalendar.get(Calendar.MONTH)) + " " + quraCalendar.get(Calendar.YEAR));
 		//
+		Calendar calendar = quraCalendar.toGregorianCalendar();
+		System.out.println("Gregorian: " + weekDays[calendar.get(Calendar.DAY_OF_WEEK)-1] + " " + calendar.get(Calendar.DAY_OF_MONTH) + ", " + (calendar.get(Calendar.MONTH)) + " " + calendar.get(Calendar.YEAR));
+		//
 		MonthDisplayHelper mHelper = new MonthDisplayHelper(quraCalendar.get(Calendar.YEAR), quraCalendar.get(Calendar.MONTH), weekStartDay, UmmAlQuraCalendar.getInstance());
-		
-		System.out.println(mHelper.getMonth());
 		
 		//6 weeks, 7 days
 	    _calendar tmp3[][] = new _calendar[6][7];
