@@ -97,10 +97,10 @@ public class UmmAlQuraCalendar extends Calendar {
 	
 	public UmmAlQuraCalendar(Calendar calendar){
 		int[] date = UmmALQura.gregorianToHijri(calendar.get(YEAR), calendar.get(MONTH)+1, calendar.get(DATE));
-		set(YEAR, date[0]);
-		set(MONTH, date[1]);
-		set(DAY_OF_MONTH, date[2]);
-		set(DAY_OF_WEEK, date[3]);
+		fields[YEAR] = date[0];
+		fields[MONTH] = date[1];
+		fields[DAY_OF_MONTH] = date[2];
+		fields[DAY_OF_WEEK] = date[3];
 		//Set time
 		for (int i = AM_PM; i < FIELD_COUNT; i++) {
 			fields[i] = calendar.get(i);
@@ -108,8 +108,8 @@ public class UmmAlQuraCalendar extends Calendar {
 	}
 
 	public UmmAlQuraCalendar(int year, int month, int day) {
-		set(YEAR, year);
-		set(MONTH, month);
+		fields[YEAR] = year;
+		fields[MONTH] = month;
 		set(DAY_OF_MONTH, day);
 	}
 	
@@ -118,7 +118,7 @@ public class UmmAlQuraCalendar extends Calendar {
 		int[] date = UmmALQura.hijriToGregorian(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
 		
 		calendar.set(YEAR, date[0]);
-		calendar.set(MONTH, date[1]);
+		calendar.set(MONTH, date[1]-1);
 		calendar.set(DAY_OF_MONTH, date[2]);
 //		calendar.set(DAY_OF_WEEK, date[3]);
 		//Set time
@@ -185,6 +185,8 @@ public class UmmAlQuraCalendar extends Calendar {
 					set(MONTH, getMaximum(MONTH) + (month % getMaximum(MONTH)));
 				}
 			}
+			if(internalGet(DATE) == 30 && UmmALQura.hMonthLength(internalGet(YEAR), internalGet(MONTH)) != 30)
+				set(DATE, 29);
 			break;
 		case DAY_OF_MONTH:
 			Calendar calendarDAY_OF_MONTH = toGregorianCalendar();
@@ -285,82 +287,16 @@ public class UmmAlQuraCalendar extends Calendar {
 		private static Double doubleHolder;
 		
 	    public static int[] gregorianToHijri(int yg, int mg, int dg){
-	        int[] output = new int[4];
-	    	int _yh = 0;
-	        int _mh = 0;
-	        int _dh = 0;
-	        int _dayweek = 0;
-	        RefSupport<Integer> refVar___0 = new RefSupport<Integer>(_yh);
-	        RefSupport<Integer> refVar___1 = new RefSupport<Integer>(_mh);
-	        RefSupport<Integer> refVar___2 = new RefSupport<Integer>(_dh);
-	        RefSupport<Integer> refVar___3 = new RefSupport<Integer>(_dayweek);
-	        int Found = 0;
-	        try {
-				Found = g2HA(yg,mg,dg,refVar___0,refVar___1,refVar___2,refVar___3);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	        _yh = refVar___0.getValue();
-	        _mh = refVar___1.getValue();
-	        _dh = refVar___2.getValue();
-	        _dayweek = refVar___3.getValue();
-	        if (Found == 1)
-	        {
-	            output[0] = _yh;
-	        	output[1] = _mh;
-	        	output[2] = _dh;
-	        	output[3] = _dayweek;
-	        }
-	        else
-	        {
-	        	output[0] = 0;
-	        	output[1] = 0;
-	        	output[2] = 0;
-	        	output[3] = 0;
-	        } 
-	        return output;
+	        return g2HA(yg,mg,dg);
 	    }
 
 	    public static int[] hijriToGregorian(int yh, int mh, int dh) {
 	    	int[] output = new int[4];
-	    	int _yg = 0;
-	        int _mg = 0;
-	        int _dg = 0;
-	        int _dayweek = 0;
-	        RefSupport<Integer> refVar___4 = new RefSupport<Integer>(yh);
-	        RefSupport<Integer> refVar___5 = new RefSupport<Integer>(mh);
-	        RefSupport<Integer> refVar___6 = new RefSupport<Integer>(dh);
-	        RefSupport<Integer> refVar___7 = new RefSupport<Integer>(_yg);
-	        RefSupport<Integer> refVar___8 = new RefSupport<Integer>(_mg);
-	        RefSupport<Integer> refVar___9 = new RefSupport<Integer>(_dg);
-	        RefSupport<Integer> refVar___10 = new RefSupport<Integer>(_dayweek);
-	        int Found = 0;
-	        try {
-				Found = h2GA(refVar___4,refVar___5,refVar___6,refVar___7,refVar___8,refVar___9,refVar___10);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	        yh = refVar___4.getValue();
-	        mh = refVar___5.getValue();
-	        dh = refVar___6.getValue();
-	        _yg = refVar___7.getValue();
-	        _mg = refVar___8.getValue();
-	        _dg = refVar___9.getValue();
-	        _dayweek = refVar___10.getValue();
-	        if (Found == 1)
-	        {
-	            output[0] = _yg;
-	        	output[1] = _mg;
-	        	output[2] = _dg;
-	        	output[3] = _dayweek;
-	        }
-	        else
-	        {
-	            output[0] = 0;
-	        	output[1] = 0;
-	        	output[2] = 0;
-	        	output[3] = 0;
-	        } 
+	        int[] result = h2GA(new int[]{yh, mh, dh, 0, 0, 0, 0});
+	        output[0] = result[3];
+        	output[1] = result[4];
+        	output[2] = result[5];
+        	output[3] = result[6];
 	        return output;
 	    }
 
@@ -378,7 +314,22 @@ public class UmmAlQuraCalendar extends Calendar {
 	    */
 	    private static int HStartYear = 1300;
 	    private static int HEndYear = 1600;
-	    private static int[] MonthMap = { 17749, 12971, 14647, 17078, 13686, 17260, 15189, 19114, 18774, 13470, 14685, 17082, 13749, 17322, 19275, 19094, 17710, 12973, 13677, 19290, 18258, 20261, 24202, 19734, 19030, 19125, 18100, 19881, 19346, 19237, 17995, 15003, 17242, 18137, 17876, 19877, 19786, 19093, 17718, 14709, 17140, 18153, 18132, 18089, 17717, 12893, 13501, 14778, 17332, 19305, 19242, 19029, 17581, 14941, 17114, 14041, 20138, 24212, 19754, 19542, 17582, 14957, 17770, 19797, 19786, 19091, 13611, 14939, 17722, 14005, 20137, 23890, 19753, 19029, 17581, 13677, 19178, 18148, 20177, 23970, 19114, 18778, 17114, 13753, 19378, 18276, 18121, 17749, 12971, 13531, 19130, 17844, 19881, 23890, 19109, 18733, 12909, 14573, 17114, 15061, 19109, 19019, 13463, 14647, 17078, 14709, 19817, 19794, 19605, 18731, 12891, 13531, 18901, 17874, 19877, 19786, 19093, 17741, 15021, 17322, 19410, 19396, 19337, 19093, 13613, 13741, 15210, 18132, 19913, 19858, 19110, 18774, 12974, 13677, 13162, 15189, 19114, 14669, 13469, 14685, 12986, 13749, 17834, 15701, 19098, 14638, 12910, 13661, 15066, 18132, 18085, 13643, 14999, 17742, 15022, 17836, 15273, 19858, 19237, 13899, 15531, 17754, 15189, 18130, 16037, 20042, 19093, 13613, 15021, 17260, 14169, 18130, 18069, 13613, 14939, 13498, 14778, 17332, 15209, 19282, 19110, 13494, 14701, 17132, 14041, 20146, 19796, 19754, 19030, 13486, 14701, 19818, 19284, 19241, 14995, 13611, 14935, 13622, 15029, 18090, 16019, 19733, 17963, 15451, 17722, 14005, 19890, 23908, 19753, 19029, 17581, 14701, 19178, 18152, 20177, 23972, 19786, 19050, 17114, 13753, 19314, 23400, 18129, 18005, 13483, 14683, 17082, 13749, 19881, 23890, 19622, 18766, 17518, 14685, 17626, 15061, 19114, 19021, 13467, 14647, 17590, 14709, 19818, 19794, 19109, 18763, 12971, 13659, 19161, 17874, 19909, 23954, 19237, 17749, 15029, 17844, 19369, 18338, 18245, 17811, 15019, 17622, 18902, 17874, 19365, 19274, 19093, 17581, 12637, 13021, 18906, 17844, 17833, 13613, 12891, 14519, 12662, 13677, 19306, 19146, 19094, 17707, 12635, 12987, 13750, 19882, 23444, 19782, 19085, 17709, 15005, 17754, 14165, 18249, 20243, 20042, 19094, 17750, 14005, 19370, 23444 };
+	    private static int[] MonthMap = { 17749, 12971, 14647, 17078, 13686, 17260, 15189, 19114, 18774, 13470, 14685, 17082, 13749, 17322, 19275, 19094,
+	    	17710, 12973, 13677, 19290, 18258, 20261, 24202, 19734, 19030, 19125, 18100, 19881, 19346, 19237, 17995, 15003, 17242, 18137, 17876, 19877,
+	    	19786, 19093, 17718, 14709, 17140, 18153, 18132, 18089, 17717, 12893, 13501, 14778, 17332, 19305, 19242, 19029, 17581, 14941, 17114, 14041,
+	    	20138, 24212, 19754, 19542, 17582, 14957, 17770, 19797, 19786, 19091, 13611, 14939, 17722, 14005, 20137, 23890, 19753, 19029, 17581, 13677,
+	    	19178, 18148, 20177, 23970, 19114, 18778, 17114, 13753, 19378, 18276, 18121, 17749, 12971, 13531, 19130, 17844, 19881, 23890, 19109, 18733,
+	    	12909, 14573, 17114, 15061, 19109, 19019, 13463, 14647, 17078, 14709, 19817, 19794, 19605, 18731, 12891, 13531, 18901, 17874, 19877, 19786,
+	    	19093, 17741, 15021, 17322, 19410, 19396, 19337, 19093, 13613, 13741, 15210, 18132, 19913, 19858, 19110, 18774, 12974, 13677, 13162, 15189,
+	    	19114, 14669, 13469, 14685, 12986, 13749, 17834, 15701, 19098, 14638, 12910, 13661, 15066, 18132, 18085, 13643, 14999, 17742, 15022, 17836,
+	    	15273, 19858, 19237, 13899, 15531, 17754, 15189, 18130, 16037, 20042, 19093, 13613, 15021, 17260, 14169, 18130, 18069, 13613, 14939, 13498,
+	    	14778, 17332, 15209, 19282, 19110, 13494, 14701, 17132, 14041, 20146, 19796, 19754, 19030, 13486, 14701, 19818, 19284, 19241, 14995, 13611,
+	    	14935, 13622, 15029, 18090, 16019, 19733, 17963, 15451, 17722, 14005, 19890, 23908, 19753, 19029, 17581, 14701, 19178, 18152, 20177, 23972,
+	    	19786, 19050, 17114, 13753, 19314, 23400, 18129, 18005, 13483, 14683, 17082, 13749, 19881, 23890, 19622, 18766, 17518, 14685, 17626, 15061,
+	    	19114, 19021, 13467, 14647, 17590, 14709, 19818, 19794, 19109, 18763, 12971, 13659, 19161, 17874, 19909, 23954, 19237, 17749, 15029, 17844,
+	    	19369, 18338, 18245, 17811, 15019, 17622, 18902, 17874, 19365, 19274, 19093, 17581, 12637, 13021, 18906, 17844, 17833, 13613, 12891, 14519,
+	    	12662, 13677, 19306, 19146, 19094, 17707, 12635, 12987, 13750, 19882, 23444, 19782, 19085, 17709, 15005, 17754, 14165, 18249, 20243, 20042,
+	    	19094, 17750, 14005, 19370, 23444 };
 	    private static short[] gmonth = { 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 };
 
 	    /****************************************************************************/
@@ -391,7 +342,8 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Output: Gregorian date: year:yg, month:mg, day:dg , day of week:dayweek  */
 	    /*       and returns flag found:1 not found:0                               */
 	    /****************************************************************************/
-	    private static int bH2GA(int yh, int mh, RefSupport<Integer> yg, RefSupport<Integer> mg, RefSupport<Integer> dg, RefSupport<Integer> dayweek) throws Exception {
+	    private static int[] bH2GA(int yh, int mh){
+	    	int[] out = new int[4];
 	        int flag, Dy, m, b;
 	        long JD;
 	        double GJD;
@@ -436,19 +388,15 @@ public class UmmAlQuraCalendar extends Calendar {
 	            /* Add the months lengths before mh */
 	            b = (b - flag) / 2;
 	        }
-	        RefSupport<Integer> refVar___11 = new RefSupport<Integer>(yg.getValue());
-	        RefSupport<Integer> refVar___12 = new RefSupport<Integer>(mg.getValue());
-	        RefSupport<Integer> refVar___13 = new RefSupport<Integer>(dg.getValue());
-	        jDToGCalendar(GJD,refVar___11,refVar___12,refVar___13);
-	        yg.setValue(refVar___11.getValue());
-	        mg.setValue(refVar___12.getValue());
-	        dg.setValue(refVar___13.getValue());
+	        int[] result = jDToGCalendar(GJD);
+	        out[0] = result[0];
+	        out[1] = result[1];
+	        out[2] = result[2];
 	        doubleHolder = GJD;
 	        JD = doubleHolder.longValue();
 	        longHolder = (JD + 1) % 7;
-	        dayweek.setValue(longHolder.intValue());
-	        flag = 1;
-	        return flag;
+	        out[3] = longHolder.intValue();
+	        return out;
 	    }
 	    
 	    /**
@@ -525,8 +473,9 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Output: Hijrah  date: year:yh, month:mh, day:dh, day of week:dayweek     */
 	    /*       and returns flag found:1 not found:0                               */
 	    /****************************************************************************/
-	    private static int g2HA(int yg, int mg, int dg, RefSupport<Integer> yh, RefSupport<Integer> mh, RefSupport<Integer> dh, RefSupport<Integer> dayweek) throws Exception {
-	        int yh1 = 0, mh1 = 0, dh1 = 0;
+	    private static int[] g2HA(int yg, int mg, int dg){
+	        int[] out = new int[4];
+	    	int yh1 = 0, mh1 = 0, dh1 = 0;
 	        int yh2, mh2, dh2;
 	        int yg1 = 0, mg1 = 0, dg1 = 0;
 	        int yg2 = 0, mg2 = 0, dg2 = 0;
@@ -536,34 +485,24 @@ public class UmmAlQuraCalendar extends Calendar {
 	        double GJD;
 	        GJD = gCalendarToJD(yg, mg, dg + 0.5);
 	        /* find JD of Gdate */
-	        RefSupport<Integer> refVar___14 = new RefSupport<Integer>(yh1);
-	        RefSupport<Integer> refVar___15 = new RefSupport<Integer>(mh1);
-	        RefSupport<Integer> refVar___16 = new RefSupport<Integer>(dh1);
-	        jDToHCalendar(GJD,refVar___14,refVar___15,refVar___16);
-	        yh1 = refVar___14.getValue();
-	        mh1 = refVar___15.getValue();
-	        dh1 = refVar___16.getValue();
+	        int[] jDToHC = jDToHCalendar(GJD);
+	        yh1 = jDToHC[0];//refVar___14.getValue();
+	        mh1 = jDToHC[1];//refVar___15.getValue();
+	        dh1 = jDToHC[2];//refVar___16.getValue();
 	        /* estimate the Hdate that correspond to the Gdate */
 	        found = 0;
 	        flag = 1;
 	        while ((!(found == 1)) && (flag == 1))
 	        {
 	            /* start searching for the exact Hdate */
-	            RefSupport<Integer> refVar___17 = new RefSupport<Integer>(yh1);
-	            RefSupport<Integer> refVar___18 = new RefSupport<Integer>(mh1);
-	            RefSupport<Integer> refVar___19 = new RefSupport<Integer>(dh1);
-	            RefSupport<Integer> refVar___20 = new RefSupport<Integer>(yg1);
-	            RefSupport<Integer> refVar___21 = new RefSupport<Integer>(mg1);
-	            RefSupport<Integer> refVar___22 = new RefSupport<Integer>(dg1);
-	            RefSupport<Integer> refVar___23 = new RefSupport<Integer>(dayweek.getValue());
-	            flag = h2GA(refVar___17,refVar___18,refVar___19,refVar___20,refVar___21,refVar___22,refVar___23);
-	            yh1 = refVar___17.getValue();
-	            mh1 = refVar___18.getValue();
-	            dh1 = refVar___19.getValue();
-	            yg1 = refVar___20.getValue();
-	            mg1 = refVar___21.getValue();
-	            dg1 = refVar___22.getValue();
-	            dayweek.setValue(refVar___23.getValue());
+		        int[] result = h2GA(new int[]{yh1, mh1, dh1, yg1, mg1, dg1, out[3]});
+	            yh1 = result[0];
+	            mh1 = result[1];
+	            dh1 = result[2];
+	            yg1 = result[3];
+	            mg1 = result[4];
+	            dg1 = result[5];
+	            out[3] = result[6];
 	            /* compute the exact correponding Gdate for the dh1-mh1-yh1 */
 	            if (yg1 > yg)
 	            {
@@ -596,21 +535,14 @@ public class UmmAlQuraCalendar extends Calendar {
 	                        mh2 = mh2 - 12;
 	                    }
 	                     
-	                    RefSupport<Integer> refVar___24 = new RefSupport<Integer>(yh2);
-	                    RefSupport<Integer> refVar___25 = new RefSupport<Integer>(mh2);
-	                    RefSupport<Integer> refVar___26 = new RefSupport<Integer>(dh2);
-	                    RefSupport<Integer> refVar___27 = new RefSupport<Integer>(yg2);
-	                    RefSupport<Integer> refVar___28 = new RefSupport<Integer>(mg2);
-	                    RefSupport<Integer> refVar___29 = new RefSupport<Integer>(dg2);
-	                    RefSupport<Integer> refVar___30 = new RefSupport<Integer>(dayweek.getValue());
-	                    flag = h2GA(refVar___24,refVar___25,refVar___26,refVar___27,refVar___28,refVar___29,refVar___30);
-	                    yh2 = refVar___24.getValue();
-	                    mh2 = refVar___25.getValue();
-	                    dh2 = refVar___26.getValue();
-	                    yg2 = refVar___27.getValue();
-	                    mg2 = refVar___28.getValue();
-	                    dg2 = refVar___29.getValue();
-	                    dayweek.setValue(refVar___30.getValue());
+	                    int[] result2 = h2GA(new int[]{yh2, mh2, dh2, yg2, mg2, dg2, out[3]});
+	                    yh2 = result2[0];
+	    	            mh2 = result2[1];
+	    	            dh2 = result2[2];
+	    	            yg2 = result2[3];
+	    	            mg2 = result2[4];
+	    	            dg2 = result2[5];
+	    	            out[3] = result2[6];
 	                    if (dg2 == dg)
 	                    {
 	                        mh1++;
@@ -655,21 +587,14 @@ public class UmmAlQuraCalendar extends Calendar {
 	                            mh2 = mh2 - 12;
 	                        }
 	                         
-	                        RefSupport<Integer> refVar___31 = new RefSupport<Integer>(yh2);
-	                        RefSupport<Integer> refVar___32 = new RefSupport<Integer>(mh2);
-	                        RefSupport<Integer> refVar___33 = new RefSupport<Integer>(dh2);
-	                        RefSupport<Integer> refVar___34 = new RefSupport<Integer>(yg2);
-	                        RefSupport<Integer> refVar___35 = new RefSupport<Integer>(mg2);
-	                        RefSupport<Integer> refVar___36 = new RefSupport<Integer>(dg2);
-	                        RefSupport<Integer> refVar___37 = new RefSupport<Integer>(dayweek.getValue());
-	                        flag = h2GA(refVar___31,refVar___32,refVar___33,refVar___34,refVar___35,refVar___36,refVar___37);
-	                        yh2 = refVar___31.getValue();
-	                        mh2 = refVar___32.getValue();
-	                        dh2 = refVar___33.getValue();
-	                        yg2 = refVar___34.getValue();
-	                        mg2 = refVar___35.getValue();
-	                        dg2 = refVar___36.getValue();
-	                        dayweek.setValue(refVar___37.getValue());
+	                        int[] result2 = h2GA(new int[]{yh2, mh2, dh2, yg2, mg2, dg2, out[3]});
+		                    yh2 = result2[0];
+		    	            mh2 = result2[1];
+		    	            dh2 = result2[2];
+		    	            yg2 = result2[3];
+		    	            mg2 = result2[4];
+		    	            dg2 = result2[5];
+		    	            out[3] = result2[6];
 	                        if (dg2 == dg)
 	                        {
 	                            mh1++;
@@ -720,21 +645,14 @@ public class UmmAlQuraCalendar extends Calendar {
 	                            mh2 = mh2 - 12;
 	                        }
 	                         
-	                        RefSupport<Integer> refVar___38 = new RefSupport<Integer>(yh2);
-	                        RefSupport<Integer> refVar___39 = new RefSupport<Integer>(mh2);
-	                        RefSupport<Integer> refVar___40 = new RefSupport<Integer>(dh2);
-	                        RefSupport<Integer> refVar___41 = new RefSupport<Integer>(yg2);
-	                        RefSupport<Integer> refVar___42 = new RefSupport<Integer>(mg2);
-	                        RefSupport<Integer> refVar___43 = new RefSupport<Integer>(dg2);
-	                        RefSupport<Integer> refVar___44 = new RefSupport<Integer>(dayweek.getValue());
-	                        flag = h2GA(refVar___38,refVar___39,refVar___40,refVar___41,refVar___42,refVar___43,refVar___44);
-	                        yh2 = refVar___38.getValue();
-	                        mh2 = refVar___39.getValue();
-	                        dh2 = refVar___40.getValue();
-	                        yg2 = refVar___41.getValue();
-	                        mg2 = refVar___42.getValue();
-	                        dg2 = refVar___43.getValue();
-	                        dayweek.setValue(refVar___44.getValue());
+	                        int[] result2 = h2GA(new int[]{yh2, mh2, dh2, yg2, mg2, dg2, out[3]});
+		                    yh2 = result2[0];
+		    	            mh2 = result2[1];
+		    	            dh2 = result2[2];
+		    	            yg2 = result2[3];
+		    	            mg2 = result2[4];
+		    	            dg2 = result2[5];
+		    	            out[3] = result2[6];
 	                        if (dg2 == dg)
 	                        {
 	                            mh1++;
@@ -764,11 +682,11 @@ public class UmmAlQuraCalendar extends Calendar {
 	        doubleHolder = gCalendarToJD(yg, mg, dg) + 2;
 	        J = doubleHolder.longValue();
 	        longHolder = J % 7;
-	        dayweek.setValue(longHolder.intValue());
-	        yh.setValue(yh1);
-	        mh.setValue(mh1);
-	        dh.setValue(dh1);
-	        return flag;
+	        out[3] = longHolder.intValue();
+	        out[0] = yh1;
+	        out[1] = mh1;
+	        out[2] = dh1;
+	        return out;
 	    }
 
 	    /****************************************************************************/
@@ -781,84 +699,71 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /*       and returns flag found:1 not found:0                               */
 	    /* Note: The function will correct Hdate if day=30 and the month is 29 only */
 	    /****************************************************************************/
-	    private static int h2GA(RefSupport<Integer> yh, RefSupport<Integer> mh, RefSupport<Integer> dh, RefSupport<Integer> yg, RefSupport<Integer> mg, RefSupport<Integer> dg, RefSupport<Integer> dayweek) throws Exception {
-	        int found, yh1 = 0, mh1 = 0, yg1 = 0, mg1 = 0, dg1 = 0, dw1 = 0;
+	    private static int[] h2GA(int[] vals){
+	    	//yh=0, mh=1, dh=2, yg=3, mg=4, dg=5, dayweek=6
+	    	int[] out = vals;
+	        int yh1 = 0, mh1 = 0/*, yg1 = 0, mg1 = 0, dg1 = 0, dw1 = 0*/;
 	        /*find the date of the begining of the month*/
 	        /* make sure values are within the allowed values */
-	        if (dh.getValue() > 30)
+	        if (out[2] > 30)
 	        {
-	            dh.setValue(1);
-	            mh.setValue(mh.getValue()+1);
+	            out[2] = 1;
+	            out[1]++;
 	        }
 	         
-	        if (dh.getValue() < 1)
+	        if (out[2] < 1)
 	        {
-	            dh.setValue(1);
-	            mh.setValue(mh.getValue()-1);
+	            out[2] = 1;
+	            out[1]--;
 	        }
 	         
-	        if (mh.getValue() > 12)
+	        if (out[1] > 12)
 	        {
-	            mh.setValue(1);
-	            yh.setValue(yh.getValue()+1);
+	            out[1] = 1;
+	            out[0]++;
 	        }
 	         
-	        if (mh.getValue() < 1)
+	        if (out[1] < 1)
 	        {
-	            mh.setValue(12);
-	            yh.setValue(yh.getValue()-1);
+	            out[1] = 12;
+	            out[0]--;
 	        }
 	         
-	        RefSupport<Integer> refVar___45 = new RefSupport<Integer>(yg.getValue());
-	        RefSupport<Integer> refVar___46 = new RefSupport<Integer>(mg.getValue());
-	        RefSupport<Integer> refVar___47 = new RefSupport<Integer>(dg.getValue());
-	        RefSupport<Integer> refVar___48 = new RefSupport<Integer>(dayweek.getValue());
-	        found = bH2GA(yh.getValue(),mh.getValue(),refVar___45,refVar___46,refVar___47,refVar___48);
-	        yg.setValue(refVar___45.getValue());
-	        mg.setValue(refVar___46.getValue());
-	        dg.setValue(refVar___47.getValue());
-	        dayweek.setValue(refVar___48.getValue());
-	        dg.setValue(dg.getValue() + dh.getValue() - 1);
-	        RefSupport<Integer> refVar___49 = new RefSupport<Integer>(yg.getValue());
-	        RefSupport<Integer> refVar___50 = new RefSupport<Integer>(mg.getValue());
-	        RefSupport<Integer> refVar___51 = new RefSupport<Integer>(dg.getValue());
-	        gDateAjust(refVar___49,refVar___50,refVar___51);
-	        yg.setValue(refVar___49.getValue());
-	        mg.setValue(refVar___50.getValue());
-	        dg.setValue(refVar___51.getValue());
+	        int[] result = bH2GA(out[0],out[1]);
+	        out[3] = result[0];
+	        out[4] = result[1];
+	        out[5] = result[2];
+	        out[6] = result[3];
+	        out[5] = out[5] + out[2] - 1;
+	        int[] resultGDate = gDateAjust(out[3],out[4],out[5]);
+	        out[3] = resultGDate[0];
+	        out[4] = resultGDate[1];
+	        out[5] = resultGDate[2];
 	        /* Make sure that dates are within the correct values */
-	        dayweek.setValue(dayweek.getValue() + dh.getValue() - 1);
-	        dayweek.setValue(dayweek.getValue() % 7);
+	        out[6] = out[6] + out[2] - 1;
+	        out[6] = out[6] % 7;
 	        /*find the date of the begining of the next month*/
-	        if (dh.getValue() == 30)
+	        if (out[2] == 30)
 	        {
-	            mh1 = mh.getValue() + 1;
-	            yh1 = yh.getValue();
+	            mh1 = out[1] + 1;
+	            yh1 = out[0];
 	            if (mh1 > 12)
 	            {
 	                mh1 = mh1 - 12;
 	                yh1++;
 	            }
 	             
-	            RefSupport<Integer> refVar___52 = new RefSupport<Integer>(yg1);
-	            RefSupport<Integer> refVar___53 = new RefSupport<Integer>(mg1);
-	            RefSupport<Integer> refVar___54 = new RefSupport<Integer>(dg1);
-	            RefSupport<Integer> refVar___55 = new RefSupport<Integer>(dw1);
-	            found = bH2GA(yh1,mh1,refVar___52,refVar___53,refVar___54,refVar___55);
-	            yg1 = refVar___52.getValue();
-	            mg1 = refVar___53.getValue();
-	            dg1 = refVar___54.getValue();
-	            dw1 = refVar___55.getValue();
-	            if (dg.getValue() == dg1)
+	            result = bH2GA(yh1,mh1);
+	            if (out[5] == result[2])
 	            {
-	                yh.setValue(yh1);
-	                mh.setValue(mh1);
-	                dh.setValue(1);
+	                out[0] = yh1;
+	                out[1] = mh1;
+	                out[2] = 1;
 	            }
 	             
 	        }
 	         
-	        return found;
+	        return out;
 	    }
 
 	    /****************************************************************************/
@@ -869,7 +774,8 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Input:  The Julian Day: JD                                               */
 	    /* Output: Gregorian date: year:yy, month:mm, day:dd                        */
 	    /****************************************************************************/
-	    private static double jDToGCalendar(double JD, RefSupport<Integer> yy, RefSupport<Integer> mm, RefSupport<Integer> dd) throws Exception {
+	    private static int[] jDToGCalendar(double JD){
+	    	int[] out = new int[3];
 	        double A, B, F;
 	        int alpha, C, E;
 	        long D, Z;
@@ -882,17 +788,17 @@ public class UmmAlQuraCalendar extends Calendar {
 	        D = (long)(365.25 * C);
 	        E = (int)((B - D) / 30.6001);
 	        Double holder = B - D - Math.floor(30.6001 * E) + F;
-	        dd.setValue(holder.intValue());
+	        out[2] = holder.intValue();
 	        if (E < 14)
-	            mm.setValue(E - 1);
+	        	out[1] = E - 1;
 	        else
-	            mm.setValue(E - 13); 
-	        if (mm.getValue() > 2)
-	            yy.setValue(C - 4716);
+	        	out[1] = E - 13; 
+	        if (out[1] > 2)
+	        	out[0] = C - 4716;
 	        else
-	            yy.setValue(C - 4715); 
+	        	out[0] = C - 4715; 
 	        F = F * 24.0;
-	        return F;
+	        return out;
 	    }
 
 	    /****************************************************************************/
@@ -903,7 +809,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Input : Gregorian date: year:yy, month:mm, day:dd                        */
 	    /* Output:  The Julian Day: JD                                              */
 	    /****************************************************************************/
-	    private static double gCalendarToJD(int yy, int mm, double dd) throws Exception {
+	    private static double gCalendarToJD(int yy, int mm, double dd){
 	        /* it does not take care of 1582correction assumes correct calender from the past  */
 	        int A, B, m, y;
 	        double T1, T2, Tr;
@@ -933,7 +839,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Input : Gregorian date: year				                    */
 	    /* Output:  0:year not leap   1:year is leap                                */
 	    /****************************************************************************/
-	    private static int gLeapYear(int year) throws Exception {
+	    private static int gLeapYear(int year){
 	        int T;
 	        T = 0;
 	        if (year % 4 == 0)
@@ -962,77 +868,82 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Input: Gregorian date: year:yg, month:mg, day:dg                         */
 	    /* Output: corrected Gregorian date: year:yg, month:mg, day:dg              */
 	    /****************************************************************************/
-	    private static void gDateAjust(RefSupport<Integer> yg, RefSupport<Integer> mg, RefSupport<Integer> dg) throws Exception {
+	    private static int[] gDateAjust(int yg, int mg, int dg){
+	    	int[] out = new int[3];
 	        int dys;
+	        //
+	        out[0] = yg;
+	        out[1] = mg;
+	        out[2] = dg;
 	        /* Make sure that dates are within the correct values */
 	        /*  Underflow  */
-	        if (mg.getValue() < 1)
+	        if (out[1] < 1)
 	        {
 	            /* months underflow */
-	            mg.setValue(12 + mg.getValue());
+	        	out[1] += 12;
 	            /* plus as the underflow months is negative */
-	            yg.setValue(yg.getValue() - 1);
+	        	out[0]--;
 	        }
 	         
-	        if (dg.getValue() < 1)
+	        if (out[2] < 1)
 	        {
 	            /* days underflow */
-	            mg.setValue(mg.getValue() - 1);
+	        	out[1]--;
 	            /* month becomes the previous month */
-	            dg.setValue(gmonth[mg.getValue()] + dg.getValue());
+	        	out[2] += gmonth[out[1]];
 	            /* number of days of the month less the underflow days (it is plus as the sign of the day is negative) */
-	            if (mg.getValue() == 2)
-	                dg.setValue(dg.getValue() + gLeapYear(yg.getValue()));
+	            if (out[1] == 2)
+	            	out[2] += gLeapYear(out[0]);
 	             
-	            if (mg.getValue() < 1)
+	            if (out[1] < 1)
 	            {
 	                /* months underflow */
-	                mg.setValue(12 + mg.getValue());
+	            	out[1] += 12 ;
 	                /* plus as the underflow months is negative */
-	                yg.setValue(yg.getValue() - 1);
+	                out[0]--;
 	            }
 	             
 	        }
 	         
 	        /* Overflow  */
-	        if (mg.getValue() > 12)
+	        if (out[1] > 12)
 	        {
 	            /* months */
-	            mg.setValue(mg.getValue() - 12);
-	            yg.setValue(yg.getValue() + 1);
+	        	out[1] -= 12;
+	        	out[0]++;
 	        }
 	         
-	        if (mg.getValue() == 2)
-	            dys = gmonth[mg.getValue()] + gLeapYear(yg.getValue());
+	        if (out[1] == 2)
+	            dys = gmonth[out[1]] + gLeapYear(out[0]);
 	        else
 	            /* number of days in the current month */
-	            dys = gmonth[mg.getValue()]; 
-	        if (dg.getValue() > dys)
+	            dys = gmonth[out[1]]; 
+	        if (out[2] > dys)
 	        {
 	            /* days overflow */
-	            dg.setValue(dg.getValue() - dys);
-	            mg.setValue(mg.getValue() + 1);
-	            if (mg.getValue() == 2)
+	        	out[2] -= dys;
+	        	out[1]++;
+	            if (out[1] == 2)
 	            {
-	                dys = gmonth[mg.getValue()] + gLeapYear(yg.getValue());
+	                dys = gmonth[out[1]] + gLeapYear(out[0]);
 	                /* number of days in the current month */
-	                if (dg.getValue() > dys)
+	                if (out[2] > dys)
 	                {
-	                    dg.setValue(dg.getValue() - dys);
-	                    mg.setValue(mg.getValue() + 1);
+	                	out[2] -= dys;
+	                	out[1]++;
 	                }
 	                 
 	            }
 	             
-	            if (mg.getValue() > 12)
+	            if (out[1] > 12)
 	            {
 	                /* months */
-	                mg.setValue(mg.getValue() - 12);
-	                yg.setValue(yg.getValue() + 1);
+	            	out[1] -= 12;
+	            	out[0]++;
 	            }
 	             
 	        }
-	         
+	         return out;
 	    }
 
 	    /****************************************************************************/
@@ -1064,36 +975,36 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /* Input:  The Julian Day: JD                                               */
 	    /* Output : Hijrah date: year:yh, month:mh, day:dh                          */
 	    /****************************************************************************/
-	    private static void jDToHCalendar(double JD, RefSupport<Integer> yh, RefSupport<Integer> mh, RefSupport<Integer> dh) throws Exception {
-	        /*
+	    private static int[] jDToHCalendar(double JD){
+	        int[] out = new int[3];
+	    	/*
 	           Estimating the hijrah dates from JD
 	         */
 	        double md, yd;
 	        yd = JD - 1948439.0;
 	        /*  subtract JD for 18/7/622 first Hijrah date*/
 	        md = mod(yd,354.367068);
-	        dh.setValue(mod(md + 0.5,29.530589) + 1);
+	        out[2] = mod(md + 0.5,29.530589) + 1;
 	        doubleHolder = (md / 29.530589) + 1;
-	        mh.setValue(doubleHolder.intValue());
+	        out[1] = doubleHolder.intValue();
 	        yd = yd - md;
 	        doubleHolder = yd / 354.367068 + 1;
-	        yh.setValue(doubleHolder.intValue());
-	        if (dh.getValue() > 30)
-	        {
-	            dh.setValue(dh.getValue() - 30);
-	            mh.setValue(mh.getValue()+1);
+	        out[0] = doubleHolder.intValue();
+	        if (out[2] > 30){
+	        	out[2] -= 30;
+	        	out[1]++;
 	        }
 	         
-	        if (mh.getValue() > 12)
-	        {
-	            mh.setValue(mh.getValue() - 12);
-	            yh.setValue(yh.getValue()+1);
+	        if (out[1] > 12){
+	        	out[1] -= 12;
+	            out[0]++;
 	        }
-	         
+	        
+	         return out;
 	    }
 
 	    /**************************************************************************/
-	    private static double ip(double x) throws Exception {
+	    private static double ip(double x) {
 	        /* Purpose: return the integral part of a double value.     */
 	        //  double  tmp;
 	        // modf(x, &tmp);
@@ -1107,7 +1018,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	      Name: mod
 	      Purpose: The mod operation for doubles  x mod y
 	    */
-	    private static int mod(double x, double y) throws Exception {
+	    private static int mod(double x, double y){
 	        int r;
 	        double d;
 	        d = x / y;
