@@ -2,6 +2,7 @@ package org.tamrah.islamic.hijri;
 
 import java.util.Calendar;
 import java.util.Locale;
+
 /**
  * The <code>HijraCalendar</code> class is implementation of Muayyad Saleh Alsadi Hijra <a href="http://git.ojuba.org/cgit/hijra">method</a>
  * @author abdullah alfadhel
@@ -128,8 +129,7 @@ public class HijraCalendar extends Calendar {
 		fields[ERA] = AH;
 		fields[YEAR] = year;
 		fields[MONTH] = month;
-		fields[DAY_OF_MONTH] = day;
-		fields[DAY_OF_WEEK] = getHijriDayOfWeek(year, month, day);
+		set(DAY_OF_MONTH, day);
 	}
 	
 	public Calendar toGregorianCalendar(){
@@ -460,6 +460,8 @@ public class HijraCalendar extends Calendar {
 					set(MONTH, getMaximum(MONTH) + (month % getMaximum(MONTH)));
 				}
 			}
+			if(internalGet(DATE) == 30 && getHijriMonthDays(internalGet(YEAR), internalGet(MONTH)) != 30)
+				set(DATE, 29);
 			break;
 		default:
 			set(field, internalGet(field) + amount);
