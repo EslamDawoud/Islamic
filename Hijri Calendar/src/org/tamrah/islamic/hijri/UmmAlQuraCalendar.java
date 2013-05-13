@@ -7,7 +7,7 @@ import java.util.Locale;
 
 /**
  * @author abdullah alfadhel
- * @version 0.0.1
+ * @version 0.0.2
  **/
 
 public class UmmAlQuraCalendar extends Calendar {
@@ -108,6 +108,11 @@ public class UmmAlQuraCalendar extends Calendar {
 	}
 
 	public UmmAlQuraCalendar(int year, int month, int day) {
+		if(year < getMinimum(YEAR) || year > getMaximum(YEAR) ||
+				month < getMinimum(MONTH) || month > getMaximum(MONTH) ||
+				day < getMinimum(DATE) || day > getMaximum(DATE)){
+			throw new IllegalArgumentException();
+		}
 		fields[YEAR] = year;
 		fields[MONTH] = month;
 		set(DAY_OF_MONTH, day);
@@ -120,7 +125,6 @@ public class UmmAlQuraCalendar extends Calendar {
 		calendar.set(YEAR, date[0]);
 		calendar.set(MONTH, date[1]-1);
 		calendar.set(DAY_OF_MONTH, date[2]);
-//		calendar.set(DAY_OF_WEEK, date[3]);
 		//Set time
 		for (int i = AM_PM; i < FIELD_COUNT; i++) {
 			calendar.set(i, fields[i]);
@@ -131,7 +135,6 @@ public class UmmAlQuraCalendar extends Calendar {
 
 	@Override
 	protected void computeTime() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -139,10 +142,16 @@ public class UmmAlQuraCalendar extends Calendar {
 	protected void computeFields() {
 		fields[DAY_OF_WEEK] = UmmALQura.getDayOfWeek(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
 		fields[WEEK_OF_MONTH] = internalGet(DATE)/7 + (internalGet(DATE)%7>0?1:0);
+		fields[DAY_OF_YEAR] = UmmALQura.getDayOfYear(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
+		fields[WEEK_OF_YEAR] = internalGet(DAY_OF_YEAR)/7 + (internalGet(DAY_OF_YEAR)%7>0?1:0);
 	}
 	
 	@Override
 	public void set(int field, int value) {
+		//Check value
+		if(value > getMaximum(field) || value < getMinimum(field)){
+			throw new IllegalArgumentException();
+		}
 		fields[field] = value;
 		if(field == YEAR || field == MONTH || field == DATE)
 			computeFields();
@@ -185,7 +194,7 @@ public class UmmAlQuraCalendar extends Calendar {
 					set(MONTH, getMaximum(MONTH) + (month % getMaximum(MONTH)));
 				}
 			}
-			if(internalGet(DATE) == 30 && UmmALQura.hMonthLength(internalGet(YEAR), internalGet(MONTH)) != 30)
+			if(internalGet(DATE) == 30 && UmmALQura.getMonthLength(internalGet(YEAR), internalGet(MONTH)) != 30)
 				set(DATE, 29);
 			break;
 		case DAY_OF_MONTH:
@@ -205,7 +214,6 @@ public class UmmAlQuraCalendar extends Calendar {
 
 	@Override
 	public void roll(int field, boolean up) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -252,7 +260,7 @@ public class UmmAlQuraCalendar extends Calendar {
 		int ret = 0;
 		switch (field) {
 		case DAY_OF_MONTH:
-			ret = UmmALQura.hMonthLength(internalGet(YEAR), internalGet(MONTH));
+			ret = UmmALQura.getMonthLength(internalGet(YEAR), internalGet(MONTH));
 			break;
 		case DAY_OF_WEEK:
 			ret = 7;
@@ -268,13 +276,11 @@ public class UmmAlQuraCalendar extends Calendar {
 
 	@Override
 	public int getGreatestMinimum(int field) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public int getLeastMaximum(int field) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 	/**
@@ -282,10 +288,6 @@ public class UmmAlQuraCalendar extends Calendar {
 	 */
 	private static class UmmALQura   
 	{
-		//
-		private static Long longHolder;
-		private static Double doubleHolder;
-		
 	    public static int[] gregorianToHijri(int yg, int mg, int dg){
 	        return g2HA(yg,mg,dg);
 	    }
@@ -314,22 +316,23 @@ public class UmmAlQuraCalendar extends Calendar {
 	    */
 	    private static int HStartYear = 1300;
 	    private static int HEndYear = 1600;
-	    private static int[] MonthMap = { 17749, 12971, 14647, 17078, 13686, 17260, 15189, 19114, 18774, 13470, 14685, 17082, 13749, 17322, 19275, 19094,
-	    	17710, 12973, 13677, 19290, 18258, 20261, 24202, 19734, 19030, 19125, 18100, 19881, 19346, 19237, 17995, 15003, 17242, 18137, 17876, 19877,
-	    	19786, 19093, 17718, 14709, 17140, 18153, 18132, 18089, 17717, 12893, 13501, 14778, 17332, 19305, 19242, 19029, 17581, 14941, 17114, 14041,
-	    	20138, 24212, 19754, 19542, 17582, 14957, 17770, 19797, 19786, 19091, 13611, 14939, 17722, 14005, 20137, 23890, 19753, 19029, 17581, 13677,
-	    	19178, 18148, 20177, 23970, 19114, 18778, 17114, 13753, 19378, 18276, 18121, 17749, 12971, 13531, 19130, 17844, 19881, 23890, 19109, 18733,
-	    	12909, 14573, 17114, 15061, 19109, 19019, 13463, 14647, 17078, 14709, 19817, 19794, 19605, 18731, 12891, 13531, 18901, 17874, 19877, 19786,
-	    	19093, 17741, 15021, 17322, 19410, 19396, 19337, 19093, 13613, 13741, 15210, 18132, 19913, 19858, 19110, 18774, 12974, 13677, 13162, 15189,
-	    	19114, 14669, 13469, 14685, 12986, 13749, 17834, 15701, 19098, 14638, 12910, 13661, 15066, 18132, 18085, 13643, 14999, 17742, 15022, 17836,
-	    	15273, 19858, 19237, 13899, 15531, 17754, 15189, 18130, 16037, 20042, 19093, 13613, 15021, 17260, 14169, 18130, 18069, 13613, 14939, 13498,
-	    	14778, 17332, 15209, 19282, 19110, 13494, 14701, 17132, 14041, 20146, 19796, 19754, 19030, 13486, 14701, 19818, 19284, 19241, 14995, 13611,
-	    	14935, 13622, 15029, 18090, 16019, 19733, 17963, 15451, 17722, 14005, 19890, 23908, 19753, 19029, 17581, 14701, 19178, 18152, 20177, 23972,
-	    	19786, 19050, 17114, 13753, 19314, 23400, 18129, 18005, 13483, 14683, 17082, 13749, 19881, 23890, 19622, 18766, 17518, 14685, 17626, 15061,
-	    	19114, 19021, 13467, 14647, 17590, 14709, 19818, 19794, 19109, 18763, 12971, 13659, 19161, 17874, 19909, 23954, 19237, 17749, 15029, 17844,
-	    	19369, 18338, 18245, 17811, 15019, 17622, 18902, 17874, 19365, 19274, 19093, 17581, 12637, 13021, 18906, 17844, 17833, 13613, 12891, 14519,
-	    	12662, 13677, 19306, 19146, 19094, 17707, 12635, 12987, 13750, 19882, 23444, 19782, 19085, 17709, 15005, 17754, 14165, 18249, 20243, 20042,
-	    	19094, 17750, 14005, 19370, 23444 };
+	    private static int[] MonthMap = { 
+	    	17749, 12971, 14647, 17078, 13686, 17260, 15189, 19114, 18774, 13470, 14685, 17082, 13749, 17322, 19275, 19094, 17710, 12973, 13677, 19290,
+	    	18258, 20261, 24202, 19734, 19030, 19125, 18100, 19881, 19346, 19237, 17995, 15003, 17242, 18137, 17876, 19877, 19786, 19093, 17718, 14709, 
+	    	17140, 18153, 18132, 18089, 17717, 12893, 13501, 14778, 17332, 19305, 19242, 19029, 17581, 14941, 17114, 14041, 20138, 24212, 19754, 19542,
+	    	17582, 14957, 17770, 19797, 19786, 19091, 13611, 14939, 17722, 14005, 20137, 23890, 19753, 19029, 17581, 13677, 19178, 18148, 20177, 23970,
+	    	19114, 18778, 17114, 13753, 19378, 18276, 18121, 17749, 12971, 13531, 19130, 17844, 19881, 23890, 19109, 18733, 12909, 14573, 17114, 15061, 
+	    	19109, 19019, 13463, 14647, 17078, 14709, 19817, 19794, 19605, 18731, 12891, 13531, 18901, 17874, 19877, 19786, 19093, 17741, 15021, 17322, 
+	    	19410, 19396, 19337, 19093, 13613, 13741, 15210, 18132, 19913, 19858, 19110, 18774, 12974, 13677, 13162, 15189, 19114, 14669, 13469, 14685, 
+	    	12986, 13749, 17834, 15701, 19098, 14638, 12910, 13661, 15066, 18132, 18085, 13643, 14999, 17742, 15022, 17836, 15273, 19858, 19237, 13899, 
+	    	15531, 17754, 15189, 18130, 16037, 20042, 19093, 13613, 15021, 17260, 14169, 18130, 18069, 13613, 14939, 13498, 14778, 17332, 15209, 19282, 
+	    	19110, 13494, 14701, 17132, 14041, 20146, 19796, 19754, 19030, 13486, 14701, 19818, 19284, 19241, 14995, 13611, 14935, 13622, 15029, 18090, 
+	    	16019, 19733, 17963, 15451, 17722, 14005, 19890, 23908, 19753, 19029, 17581, 14701, 19178, 18152, 20177, 23972, 19786, 19050, 17114, 13753, 
+	    	19314, 23400, 18129, 18005, 13483, 14683, 17082, 13749, 19881, 23890, 19622, 18766, 17518, 14685, 17626, 15061, 19114, 19021, 13467, 14647, 
+	    	17590, 14709, 19818, 19794, 19109, 18763, 12971, 13659, 19161, 17874, 19909, 23954, 19237, 17749, 15029, 17844, 19369, 18338, 18245, 17811, 
+	    	15019, 17622, 18902, 17874, 19365, 19274, 19093, 17581, 12637, 13021, 18906, 17844, 17833, 13613, 12891, 14519, 12662, 13677, 19306, 19146, 
+	    	19094, 17707, 12635, 12987, 13750, 19882, 23444, 19782, 19085, 17709, 15005, 17754, 14165, 18249, 20243, 20042, 19094, 17750, 14005, 19370, 
+	    	23444 };
 	    private static short[] gmonth = { 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 };
 
 	    /****************************************************************************/
@@ -344,7 +347,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /****************************************************************************/
 	    private static int[] bH2GA(int yh, int mh){
 	    	int[] out = new int[4];
-	        int flag, Dy, m, b;
+	        int Dy, m;
 	        long JD;
 	        double GJD;
 	        /* Make sure that the date is within the range of the tables */
@@ -367,26 +370,14 @@ public class UmmAlQuraCalendar extends Calendar {
 	        {
 	            yh = HEndYear;
 	        }
-	        doubleHolder = hCalendarToJD(yh,1,1);
+	        Double doubleHolder = hCalendarToJD(yh,1,1);
 	        JD = doubleHolder.longValue();
 	        /* estimate JD of the begining of the year */
 	        Dy = MonthMap[yh - HStartYear] / 4096;
 	        /* Mask 1111000000000000 */
 	        GJD = JD - 3 + Dy;
-	        /* correct the JD value from stored tables  */
-	        b = MonthMap[yh - HStartYear];
-	        b = b - Dy * 4096;
-	        for (m = 1;m < mh;m++)
-	        {
-	            flag = b % 2;
-	            /* Mask for the current month */
-	            if (flag == 1)
-	                Dy = 30;
-	            else
-	                Dy = 29; 
-	            GJD = GJD + Dy;
-	            /* Add the months lengths before mh */
-	            b = (b - flag) / 2;
+	        for (m = 1;m < mh;m++){
+	            GJD = GJD + getMonthLength(yh, m);
 	        }
 	        int[] result = jDToGCalendar(GJD);
 	        out[0] = result[0];
@@ -394,55 +385,45 @@ public class UmmAlQuraCalendar extends Calendar {
 	        out[2] = result[2];
 	        doubleHolder = GJD;
 	        JD = doubleHolder.longValue();
-	        longHolder = (JD + 1) % 7;
+	        Long longHolder = (JD + 1) % 7;
 	        out[3] = longHolder.intValue();
 	        return out;
 	    }
 	    
 	    /**
 	     * 
+	     * @param yh Hijri year
+	     * @param mh Hijri month
+	     * @param dh Hijri day
+	     * @return DAY_OF_WEEK
 	     */
 	    private static int getDayOfWeek(int yh, int mh, int dh){
-	    	int flag, Dy, m, b;
-	        long JD;
-	        double GJD;
-			doubleHolder = hCalendarToJD(yh,mh,dh);
-	        JD = doubleHolder.longValue();
-	        /* estimate JD of the begining of the year */
-	        Dy = MonthMap[yh - HStartYear] / 4096;
-	        /* Mask 1111000000000000 */
-	        GJD = JD - 3 + Dy;
-	        /* correct the JD value from stored tables  */
-	        b = MonthMap[yh - HStartYear];
-	        b = b - Dy * 4096;
-	        for (m = 1;m < mh;m++)
-	        {
-	            flag = b % 2;
-	            /* Mask for the current month */
-	            if (flag == 1)
-	                Dy = 30;
-	            else
-	                Dy = 29; 
-	            GJD = GJD + Dy;
-	            /* Add the months lengths before mh */
-	            b = (b - flag) / 2;
-	        }
-	        doubleHolder = GJD;
-	        JD = doubleHolder.longValue();
-	        longHolder = (JD + 1) % 7 +1;
-	        return longHolder.intValue();
+			Double doubleHolder = hCalendarToJD(yh,mh,dh);
+			return ((doubleHolder.intValue()+1)%7)+1;
 	    }
-
-	    /* date has been found */
-	    /****************************************************************************/
-	    /* Name:    HMonthLength						    */
-	    /* Type:    Function                                                        */
-	    /* Purpose: Obtains the month length            		     	    */
-	    /* Arguments:                                                               */
-	    /* Input : Hijrah  date: year:yh, month:mh                                  */
-	    /* Output:  Month Length                                                    */
-	    /****************************************************************************/
-	    private static int hMonthLength(int yh, int mh) {
+	    
+	    /**
+	     * 
+	     * @param yh Hijri year
+	     * @param mh Hijri month
+	     * @param dh Hijri day
+	     * @return DAY_OF_YEAR
+	     */
+	    private static int getDayOfYear(int yh, int mh, int dh){
+	    	int counter = dh;
+	    	for (int i = 1; i < mh; i++) {
+				counter += getMonthLength(yh, i);
+			}
+	    	return counter;
+	    }
+	    
+	    /**
+	     * Obtains the month length (in days)
+	     * @param yh Hijri year
+	     * @param mh Hijri month
+	     * @return Month Length (29 or 30)
+	     */
+	    private static int getMonthLength(int yh, int mh) {
 	        int flag, Dy, N, m;
 	        if (yh < HStartYear || yh > HEndYear)
 	        {
@@ -455,8 +436,8 @@ public class UmmAlQuraCalendar extends Calendar {
 	            for (m = 1;m < mh;m++)
 	                N = 2 * N;
 	            flag = MonthMap[yh - HStartYear] & N;
-	            /* Mask for the current month */
-	            if (flag == 1)
+	            // Mask for the current month //
+	            if (flag != 0)
 	                Dy = 30;
 	            else
 	                Dy = 29; 
@@ -486,9 +467,9 @@ public class UmmAlQuraCalendar extends Calendar {
 	        GJD = gCalendarToJD(yg, mg, dg + 0.5);
 	        /* find JD of Gdate */
 	        int[] jDToHC = jDToHCalendar(GJD);
-	        yh1 = jDToHC[0];//refVar___14.getValue();
-	        mh1 = jDToHC[1];//refVar___15.getValue();
-	        dh1 = jDToHC[2];//refVar___16.getValue();
+	        yh1 = jDToHC[0];
+	        mh1 = jDToHC[1];
+	        dh1 = jDToHC[2];
 	        /* estimate the Hdate that correspond to the Gdate */
 	        found = 0;
 	        flag = 1;
@@ -679,9 +660,9 @@ public class UmmAlQuraCalendar extends Calendar {
 	            }
 	             
 	        }
-	        doubleHolder = gCalendarToJD(yg, mg, dg) + 2;
+	        Double doubleHolder = gCalendarToJD(yg, mg, dg) + 2;
 	        J = doubleHolder.longValue();
-	        longHolder = J % 7;
+	        Long longHolder = J % 7;
 	        out[3] = longHolder.intValue();
 	        out[0] = yh1;
 	        out[1] = mh1;
@@ -699,6 +680,11 @@ public class UmmAlQuraCalendar extends Calendar {
 	    /*       and returns flag found:1 not found:0                               */
 	    /* Note: The function will correct Hdate if day=30 and the month is 29 only */
 	    /****************************************************************************/
+	    /**
+	     * convert Hijri date to Gregorian date
+	     * @param vals
+	     * @return int[] where indexes are 0=Hijri year, 1=Hijri month, 2=Hijri day, 3=Gregorian year , 4=Gregorian month, 5=Gregorian day, 6=Day of Week
+	     */
 	    private static int[] h2GA(int[] vals){
 	    	//yh=0, mh=1, dh=2, yg=3, mg=4, dg=5, dayweek=6
 	    	int[] out = vals;
@@ -985,7 +971,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	        /*  subtract JD for 18/7/622 first Hijrah date*/
 	        md = mod(yd,354.367068);
 	        out[2] = mod(md + 0.5,29.530589) + 1;
-	        doubleHolder = (md / 29.530589) + 1;
+	        Double doubleHolder = (md / 29.530589) + 1;
 	        out[1] = doubleHolder.intValue();
 	        yd = yd - md;
 	        doubleHolder = yd / 354.367068 + 1;
@@ -1022,7 +1008,7 @@ public class UmmAlQuraCalendar extends Calendar {
 	        int r;
 	        double d;
 	        d = x / y;
-	        doubleHolder = round(d);
+	        Double doubleHolder = round(d);
 	        r = doubleHolder.intValue();
 	        if (r < 0)
 	            r--;
