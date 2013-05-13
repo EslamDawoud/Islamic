@@ -6,7 +6,7 @@ import java.util.Locale;
 /**
  * The <code>HijraCalendar</code> class is implementation of Muayyad Saleh Alsadi Hijra <a href="http://git.ojuba.org/cgit/hijra">method</a>
  * @author abdullah alfadhel
- * @version 0.0.3
+ * @version 0.0.4
  *
  */
 public class HijraCalendar extends Calendar {
@@ -195,18 +195,6 @@ public class HijraCalendar extends Calendar {
 	 * @param year Hijri year
 	 * @param month Hijri month
 	 * @param day Hijri day
-	 * @return the day number within the year of the Islamic date (year, month, day), 1 for 1/1 in any year
-	 */
-	protected int getHijriWeekOfYear(int year, int month, int day){
-		int days = getHijriDaysBeforeMonth(year, month) + day;
-		return days/7 + (days%7>0?1:0);
-	}
-	
-	/**
-	 * 
-	 * @param year Hijri year
-	 * @param month Hijri month
-	 * @param day Hijri day
 	 * @return absolute date of Hijri (year, month, day), eg. ramadan (9),1,1427 -> 732578
 	 */
 	protected int hijriToAbsolute(int year, int month, int day){
@@ -346,18 +334,8 @@ public class HijraCalendar extends Calendar {
 	 * 
 	 * @param year
 	 * @param month
-	 * @return the number of days in a given hijri month in a given year
-	 */
-	protected int getHijriMonthDays_(int year, int month){
-		return hijriToAbsolute(year+month/12,month%12+1,1)-hijriToAbsolute(year,month,1);
-	}
-	
-	/**
-	 * 
-	 * @param year
-	 * @param month
 	 * @param day
-	 * @return the day-of-the-week index of hijri (year,month,day) Date, 0 for Sunday, 1 for Monday, etc.
+	 * @return the day-of-the-week index of hijri (year,month,day) Date, 1 for Sunday, 2 for Monday, etc.
 	 */
 	protected int getHijriDayOfWeek(int year, int month, int day){
 		return hijriToAbsolute(year, month, day) % 7 + 1;
@@ -368,10 +346,10 @@ public class HijraCalendar extends Calendar {
 	 * @param year
 	 * @param month
 	 * @param day
-	 * @return the day-of-the-week index of gregorian (year, month, day) DATE, 0 for Sunday, 1 for Monday, etc.
+	 * @return the day-of-the-week index of gregorian (year, month, day) DATE, 1 for Sunday, 2 for Monday, etc.
 	 */
 	protected int getGregorianDayOfWeek(int year, int month, int day){
-		return gregorianToAbsolute (year,month, day) % 7;
+		return gregorianToAbsolute (year,month, day) % 7 + 1;
 	}
 	
 	/**
@@ -471,10 +449,10 @@ public class HijraCalendar extends Calendar {
 
 	@Override
 	protected void computeFields() {
-		fields[WEEK_OF_YEAR] = getHijriWeekOfYear(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
+		fields[DAY_OF_WEEK] = getHijriDayOfWeek(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
 		fields[WEEK_OF_MONTH] = internalGet(DATE)/7 + (internalGet(DATE)%7>0?1:0);
 		fields[DAY_OF_YEAR] = getHijriDayOfYear(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
-		fields[DAY_OF_WEEK] = getHijriDayOfWeek(internalGet(YEAR), internalGet(MONTH), internalGet(DATE));
+		fields[WEEK_OF_YEAR] = internalGet(DAY_OF_YEAR)/7 + (internalGet(DAY_OF_YEAR)%7>0?1:0);
 	}
 
 	@Override
