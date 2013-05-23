@@ -398,7 +398,11 @@ public class UmmAlQuraCalendar extends Calendar {
 	     * @return DAY_OF_WEEK
 	     */
 	    private static int getDayOfWeek(int yh, int mh, int dh){
-			Double doubleHolder = hCalendarToJD(yh,mh,dh);
+			Double doubleHolder = hCalendarToJD(yh,1,1)-1;
+			for (int i = 1; i < mh; i++) {
+				doubleHolder += getMonthLength(yh, i);
+			}
+			doubleHolder+=dh;
 			return ((doubleHolder.intValue()+1)%7)+1;
 	    }
 	    
