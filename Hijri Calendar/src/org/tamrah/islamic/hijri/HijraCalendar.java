@@ -518,7 +518,7 @@ public class HijraCalendar extends Calendar {
 		int ret = 0;
 		switch (field) {
 		case DAY_OF_MONTH:
-			ret = getHijriMonthDays(get(MONTH), get(YEAR));
+			ret = getHijriMonthDays(get(YEAR), get(MONTH));
 			break;
 		case DAY_OF_WEEK:
 			ret = 7;
