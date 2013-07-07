@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
+//import org.tamrah.islamic.hijri.UmmAlQuraCalendar;
+
 public class PrayTime {
     //Date
     Calendar calendar;
@@ -27,6 +29,7 @@ public class PrayTime {
     private double lat; // latitude
     private double lng; // longitude
     private double timeZone; // time-zone
+    private TimeZone realTimeZone;
     private double JDate; // Julian date
     // ------------------------------------------------------------
     // Adjusting Methods for Higher Latitudes
@@ -52,18 +55,6 @@ public class PrayTime {
     private int[] offsets;
 
     public PrayTime(Calendar date, double latitude,
-            double longitude, double timeZone, 
-            CalculationMethod calculationMethod,
-            JuristicMethod juristicMethods){
-    	this.calendar = date;
-    	this.lat = latitude;
-    	this.lng = longitude;
-    	this.timeZone = timeZone;
-    	this.calcMethod = calculationMethod;
-    	this.asrJuristic = juristicMethods;
-    	init();
-    }
-    public PrayTime(Calendar date, double latitude,
             double longitude, TimeZone timeZone, 
             CalculationMethod calculationMethod,
             JuristicMethod juristicMethods){
@@ -71,6 +62,7 @@ public class PrayTime {
     	this.lat = latitude;
     	this.lng = longitude;
     	this.timeZone = getOffset(timeZone);
+    	this.realTimeZone = timeZone;
     	this.calcMethod = calculationMethod;
     	this.asrJuristic = juristicMethods;
     	init();
@@ -85,6 +77,10 @@ public class PrayTime {
         MidNight = 1; // middle of night
         OneSeventh = 2; // 1/7th of night
         AngleBased = 3; // angle/60th of night
+        
+        //http://moonsighting.com/how-we.html
+        if(this.lat >= 48.5)
+    		this.setAdjustHighLats(3);
 
         // Time Names
         timeNames = new ArrayList<String>();
@@ -477,7 +473,13 @@ public class PrayTime {
             int hours = (int)Math.floor(time);
             Double minutes = Math.floor((time - hours) * 60.0);
             calendar.set(Calendar.HOUR_OF_DAY, hours);
+//            if(realTimeZone.getID().equalsIgnoreCase("Asia/Riyadh") &&
+//            		new UmmAlQuraCalendar(calendar).get(Calendar.MONTH) == 9 &&
+//           		i == 6)
+//            	minutes += 30;
             calendar.set(Calendar.MINUTE, minutes.intValue());
+            calendar.set(Calendar.SECOND, 1);
+            calendar.set(Calendar.MILLISECOND, 1);
             prayerTimes.add(calendar.getTime());
         }
         this.fajr = prayerTimes.get(0);
