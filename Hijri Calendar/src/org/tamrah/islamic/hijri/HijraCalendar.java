@@ -9,7 +9,7 @@ import java.util.Locale;
  * @version 0.0.4
  *
  */
-public class HijraCalendar extends Calendar {
+public class HijraCalendar extends Calendar implements Hijri {
 	// Proclaim serialization
 	private static final long serialVersionUID = -602763277873317926L;
 	protected static final int CONTS_P = 191;
@@ -17,88 +17,6 @@ public class HijraCalendar extends Calendar {
 	protected static final int CONTS_A = 48;
 	//Julian 0622-7-16 = gregorian 0759-6-11 (I think it should be 622, 7, 19)
 	protected static final int HIJRI_EPOCH = 227015;
-	
-	/**
-	 * 
-	 */
-	static final int AH = 1;
-	
-	/**
-	 * 
-	 */
-	static final int BH = 0;
-	
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * first month of the year in the Hijri calendar.
-     */
-    public final static int MUHARRAM = 1;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * second month of the year in the Hijri calendar.
-     */
-    public final static int SAFAR = 2;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * third month of the year in the Hijri calendars.
-     */
-    public final static int RABI_I = 3;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * fourth month of the year in the Hijri calendar.
-     */
-    public final static int RABI_II = 4;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * fifth month of the year in the Hijri calendar.
-     */
-    public final static int JUMADA_I = 5;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * sixth month of the year in the Hijri calendar.
-     */
-    public final static int JUMADA_II = 6;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * seventh month of the year in the Hijri calendar.
-     */
-    public final static int RAJAB = 7;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * eighth month of the year in the Hijri calendar.
-     */
-    public final static int SHAABAN = 8;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * ninth month of the year in the Hijri calendar.
-     */
-    public final static int RAMADAN = 9;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * tenth month of the year in the Hijri calendar.
-     */
-    public final static int SHAWWAL = 10;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * eleventh month of the year in the Hijri calendar.
-     */
-    public final static int DHU_AL_QIDAH = 11;
-
-    /**
-     * Value of the {@link #MONTH} field indicating the
-     * twelfth month of the year in the Hijri calendar.
-     */
-    public final static int DHU_AL_HIJJAH = 12;
 	
     /**
      * Gets a hijri calendar using the default time zone and locale. The
@@ -132,6 +50,7 @@ public class HijraCalendar extends Calendar {
 		set(DAY_OF_MONTH, day);
 	}
 	
+	@Override
 	public Calendar toGregorianCalendar(){
 		return hijriToGregorian(internalGet(YEAR), internalGet(MONTH), internalGet(DAY_OF_MONTH));
 	}
