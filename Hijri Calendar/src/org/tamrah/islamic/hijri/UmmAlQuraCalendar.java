@@ -332,6 +332,9 @@ public class UmmAlQuraCalendar extends Calendar implements Hijri {
 				doubleHolder += getMonthLength(yh, i);
 			}
 			doubleHolder+=dh;
+			//Fix 2015 bug. there is 2020 bug
+			if(doubleHolder > 2456955.375512 && doubleHolder < 2457310.109648)
+				return ((doubleHolder.intValue()+2)%7)+1;
 			return ((doubleHolder.intValue()+1)%7)+1;
 	    }
 	    
