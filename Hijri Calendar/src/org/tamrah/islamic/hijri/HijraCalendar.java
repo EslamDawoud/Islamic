@@ -257,7 +257,7 @@ public class HijraCalendar extends Calendar implements Hijri {
 	 * @return the day-of-the-week index of hijri (year,month,day) Date, 1 for Sunday, 2 for Monday, etc.
 	 */
 	protected int getHijriDayOfWeek(int year, int month, int day){
-		return hijriToAbsolute(year, month, day) % 7 + 1;
+		return hijriToAbsolute(year, month, day) % 7 + 2;
 	}
 	
 	/**
